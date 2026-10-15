@@ -97,4 +97,8 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor
+  container: { flex: 1, backgroundColor: '#000000' },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000' },
+  screen: { flex: 1 },
+  hidden: { display: 'none' },
+});
