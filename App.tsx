@@ -1,4 +1,3 @@
-```typescript
 import React from 'react';
 import { StatusBar, SafeAreaView, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
@@ -37,4 +36,6 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors
+    backgroundColor: colors.background,
+  },
+});
