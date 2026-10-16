@@ -12,60 +12,66 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
   const [lastFetchedAt, setLastFetchedAt] = useState<string | null>(null);
 
   const fetchPeers = useCallback(async (isRefresh = false) => {
-    if (isRefresh) {
-      setIsRefreshing(true);
-    } else {
-      setIsLoading(true);
-    }
-    setError(null);
-
     try {
+      if (isRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      setError(null);
+
+      // Fetch profiles from Supabase
       const { data, error: fetchError } = await supabase
         .from('profiles')
         .select('*');
 
       if (fetchError) {
         throw {
-          code: fetchError.code || 'UNKNOWN_ERROR',
-          message: fetchError.message,
+          code: fetchError.code || 'FETCH_ERROR',
+          message: fetchError.message || 'Failed to fetch nearby peers',
           details: fetchError.details ? { details: fetchError.details } : undefined,
         } as ApiError;
       }
 
-      const formattedPeers: FormattedNearbyPeer[] = (data || []).map((profile: any) => {
-        const distanceMeters = profile.distance_meters ?? Math.floor(Math.random() * 2000);
-        return {
-          id: profile.id,
-          username: profile.username || 'user',
-          full_name: profile.full_name || 'Anonymous',
-          age: profile.age || 25,
-          avatar_url: profile.avatar_url || null,
-          is_ble_discoverable: profile.is_ble_discoverable ?? true,
-          distance_meters: distanceMeters,
-          last_active_at: profile.last_active_at || new Date().toISOString(),
-          formatted_distance: formatDistance(distanceMeters),
-          signal_strength: getSignalStrength(distanceMeters),
-          presence_status: getPresenceStatus(profile.last_active_at),
-        };
-      });
+      if (data) {
+        // Map raw profile data to FormattedNearbyPeer
+        const formatted: FormattedNearbyPeer[] = data.map((item: any) => {
+          // Calculate distance mock or real based on location
+          const distanceMeters = item.distance_meters || Math.floor(Math.random() * selectedRadius);
+          
+          return {
+            id: item.id,
+            username: item.username || 'unknown',
+            full_name: item.full_name || 'Anonymous',
+            age: item.age || 25,
+            avatar_url: item.avatar_url || null,
+            is_ble_discoverable: item.is_ble_discoverable ?? true,
+            distance_meters: distanceMeters,
+            last_active_at: item.updated_at || new Date().toISOString(),
+            formatted_distance: formatDistance(distanceMeters),
+            signal_strength: getSignalStrength(distanceMeters),
+            presence_status: getPresenceStatus(item.updated_at || new Date().toISOString()),
+          };
+        });
 
-      setPeers(formattedPeers);
-      setLastFetchedAt(new Date().toLocaleTimeString());
+        setPeers(formatted);
+        setLastFetchedAt(new Date().toISOString());
+      }
     } catch (err: any) {
       setError({
-        code: err.code || 'FETCH_FAILED',
-        message: err.message || 'Failed to fetch nearby peers',
+        code: err.code || 'UNKNOWN_ERROR',
+        message: err.message || 'An unexpected error occurred',
         details: err.details,
       });
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [selectedRadius]);
 
   useEffect(() => {
     fetchPeers();
-  }, [fetchPeers, location, selectedRadius]);
+  }, [fetchPeers, location]);
 
   const refresh = async () => {
     await fetchPeers(true);
