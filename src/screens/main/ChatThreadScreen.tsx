@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
-import { theme } from '../../constants/theme';
 import { ChatMessage } from '../../types';
+import { theme } from '../../constants/theme';
 
 interface ChatThreadScreenProps {
   userId: string;
@@ -25,7 +25,7 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{userName}</Text>
         <View style={{ width: 40 }} />
@@ -34,7 +34,6 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.messageList}
         renderItem={({ item }) => {
           const isMe = item.sender_id === myId;
           return (
@@ -43,6 +42,7 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
             </View>
           );
         }}
+        contentContainerStyle={styles.messageList}
       />
 
       <View style={styles.inputContainer}>
@@ -71,8 +71,8 @@ const styles = StyleSheet.create({
   myMessage: { backgroundColor: theme.colors.primary.main, alignSelf: 'flex-end' },
   theirMessage: { backgroundColor: theme.colors.surface, alignSelf: 'flex-start' },
   messageText: { color: theme.colors.text.primary, fontSize: 15 },
-  inputContainer: { flexDirection: 'row', padding: 12, borderTopWidth: 1, borderTopColor: theme.colors.border, backgroundColor: theme.colors.surface },
-  input: { flex: 1, backgroundColor: theme.colors.background, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, color: theme.colors.text.primary, marginRight: 8 },
-  sendButton: { backgroundColor: theme.colors.primary.main, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 16, borderRadius: 8 },
-  sendButtonText: { color: '#FFF', fontWeight: '600' },
+  inputContainer: { flexDirection: 'row', padding: 16, borderTopWidth: 1, borderTopColor: theme.colors.border, backgroundColor: theme.colors.surface },
+  input: { flex: 1, backgroundColor: theme.colors.background, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 8, padding: 12, color: theme.colors.text.primary, marginRight: 8 },
+  sendButton: { justifyContent: 'center', backgroundColor: theme.colors.primary.main, paddingHorizontal: 16, borderRadius: 8 },
+  sendButtonText: { color: '#FFF', fontWeight: 'bold' },
 });

@@ -5,7 +5,7 @@ import { Avatar } from '../common/Avatar';
 import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
 import { theme } from '../../constants/theme';
-import { getPresenceColor } from '../../lib/utils';
+import { getPresenceColor, formatRelativeTime } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -16,16 +16,16 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
   const presenceColor = getPresenceColor(peer.presence_status);
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.avatarContainer}>
-        <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
+        <Avatar uri={peer.avatar_url} name={peer.full_name} size={50} />
         <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
       </View>
 
       <View style={styles.infoContainer}>
         <View style={styles.headerRow}>
           <Text style={styles.name} numberOfLines={1}>
-            {peer.full_name || peer.username}
+            {peer.full_name}
             <Text style={styles.age}>, {peer.age}</Text>
           </Text>
           <DistanceBadge distance={peer.formatted_distance} />
@@ -37,8 +37,8 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 
         <View style={styles.footerRow}>
           <SignalIndicator strength={peer.signal_strength} />
-          <Text style={styles.presenceText}>
-            {peer.presence_status === 'online' ? 'Online' : peer.presence_status === 'recently' ? 'Active recently' : 'Offline'}
+          <Text style={styles.lastActive}>
+            Active {formatRelativeTime(peer.last_active_at)}
           </Text>
         </View>
       </View>
@@ -47,27 +47,27 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 };
 
 const styles = StyleSheet.create({
-  container: {
+  card: {
     flexDirection: 'row',
     backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
     alignItems: 'center',
   },
   avatarContainer: {
     position: 'relative',
-    marginRight: 12,
+    marginRight: theme.spacing.md,
   },
   presenceDot: {
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     borderWidth: 2,
     borderColor: theme.colors.surface,
   },
@@ -81,28 +81,28 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   name: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
     flex: 1,
-    marginRight: 8,
+    marginRight: theme.spacing.sm,
   },
   age: {
-    fontWeight: '400',
+    fontWeight: theme.typography.fontWeight.regular,
     color: theme.colors.text.secondary,
   },
   username: {
-    fontSize: 13,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
   footerRow: {
     flexDirection: 'row',
-    alignItem: 'center',
     justifyContent: 'space-between',
-  } as any,
-  presenceText: {
-    fontSize: 12,
+    alignItems: 'center',
+  },
+  lastActive: {
+    fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.tertiary,
   },
 });
