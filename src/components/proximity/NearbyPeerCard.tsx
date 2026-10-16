@@ -13,20 +13,17 @@ interface NearbyPeerCardProps {
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.header}>
-        <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={48} />
+        <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
         <View style={styles.info}>
-          <Text style={styles.name}>{peer.full_name}</Text>
+          <Text style={styles.name}>{peer.full_name || peer.username}</Text>
           <Text style={styles.username}>@{peer.username} • {peer.age}</Text>
         </View>
         <SignalIndicator strength={peer.signal_strength} />
       </View>
       <View style={styles.footer}>
         <DistanceBadge distance={peer.formatted_distance} />
-        <Text style={[styles.status, { color: peer.presence_status === 'online' ? theme.colors.success : theme.colors.text.secondary }]}>
-          {peer.presence_status}
-        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -37,14 +34,13 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.sm,
   },
   info: {
     flex: 1,
@@ -62,16 +58,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: theme.spacing.xs,
-    paddingTop: theme.spacing.xs,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.divider,
-  },
-  status: {
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: theme.typography.fontWeight.medium,
-    textTransform: 'capitalize',
+    justifyContent: 'flex-end',
+    marginTop: theme.spacing.sm,
   },
 });
