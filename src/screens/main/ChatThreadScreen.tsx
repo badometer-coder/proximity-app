@@ -10,9 +10,10 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../constants/theme';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
 import { ChatMessage } from '../../types';
+import { theme } from '../../constants/theme';
+import { formatTime } from '../../lib/utils';
 
 interface ChatThreadScreenProps {
   userId: string;
@@ -34,10 +35,14 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
     if (!inputText.trim()) return;
     const textToSend = inputText;
     setInputText('');
-    await sendMessage(textToSend);
+    try {
+      await sendMessage(textToSend);
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
   };
 
-  const renderMessage = ({ item }: { item: ChatMessage }) => {
+  const renderItem = ({ item }: { item: ChatMessage }) => {
     const isMe = item.sender_id === myId;
     return (
       <View
@@ -49,8 +54,8 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
         <Text style={[styles.messageText, isMe ? styles.myMessageText : styles.theirMessageText]}>
           {item.message}
         </Text>
-        <Text style={[styles.timeText, isMe ? styles.myTimeText : styles.theirTimeText]}>
-          {new Date(item.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        <Text style={[styles.timestampText, isMe ? styles.myTimestampText : styles.theirTimestampText]}>
+          {formatTime(item.sent_at)}
         </Text>
       </View>
     );
@@ -67,13 +72,12 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
           <Ionicons name="arrow-back" size={24} color={theme.colors.text.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{userName}</Text>
-        <View style={{ width: 24 }} />
       </View>
 
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id}
-        renderItem={renderMessage}
+        renderItem={renderItem}
         contentContainerStyle={styles.messageList}
         inverted={false}
       />
@@ -103,7 +107,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -111,11 +114,11 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
   },
   backButton: {
-    padding: 4,
+    marginRight: 12,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: theme.colors.text.primary,
   },
   messageList: {
@@ -127,7 +130,7 @@ const styles = StyleSheet.create({
     maxWidth: '75%',
     padding: 12,
     borderRadius: 16,
-    marginBottom: 12,
+    marginVertical: 4,
   },
   myMessage: {
     backgroundColor: theme.colors.primary.main,
@@ -150,24 +153,24 @@ const styles = StyleSheet.create({
   theirMessageText: {
     color: theme.colors.text.primary,
   },
-  timeText: {
+  timestampText: {
     fontSize: 10,
     marginTop: 4,
     alignSelf: 'flex-end',
   },
-  myTimeText: {
+  myTimestampText: {
     color: 'rgba(255, 255, 255, 0.7)',
   },
-  theirTimeText: {
+  theirTimestampText: {
     color: theme.colors.text.secondary,
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     padding: 12,
+    backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
+    alignItems: 'center',
   },
   input: {
     flex: 1,
