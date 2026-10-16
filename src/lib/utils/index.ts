@@ -10,8 +10,8 @@ export const formatDistance = (meters: number): string => {
 export const getSignalStrength = (distanceMeters: number): SignalStrength => {
   if (distanceMeters < 10) return 'excellent';
   if (distanceMeters < 30) return 'good';
-  if (distanceMeters < 60) return 'fair';
-  if (distanceMeters < 100) return 'weak';
+  if (distanceMeters < 70) return 'fair';
+  if (distanceMeters < 150) return 'weak';
   return 'none';
 };
 
@@ -44,7 +44,7 @@ export const getPresenceColor = (status: UserPresenceStatus): string => {
 
 export const formatRelativeTime = (timestamp: string): string => {
   const diffSeconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
-  if (diffSeconds < 60) return 'just now';
+  if (diffSeconds < 60) return 'Just now';
   const diffMinutes = Math.floor(diffSeconds / 60);
   if (diffMinutes < 60) return `${diffMinutes}m ago`;
   const diffHours = Math.floor(diffMinutes / 60);
@@ -53,7 +53,7 @@ export const formatRelativeTime = (timestamp: string): string => {
 };
 
 export const getInitials = (name: string): string => {
-  if (!name) return '';
+  if (!name) return '??';
   const parts = name.trim().split(' ');
   if (parts.length >= 2) {
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
@@ -62,10 +62,6 @@ export const getInitials = (name: string): string => {
 };
 
 export const formatTime = (isoString: string): string => {
-  try {
-    const date = new Date(isoString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } catch {
-    return '';
-  }
+  const date = new Date(isoString);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
