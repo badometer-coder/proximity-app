@@ -5,7 +5,6 @@ import { Avatar } from '../common/Avatar';
 import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
 import { theme } from '../../constants/theme';
-import { getPresenceColor, formatRelativeTime } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -13,43 +12,30 @@ interface NearbyPeerCardProps {
 }
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
-  const presenceColor = getPresenceColor(peer.presence_status);
-
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
-          <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
-        </View>
-
-        <View style={styles.infoContainer}>
+        <Avatar uri={peer.avatar_url} name={peer.full_name} size={50} />
+        <View style={styles.info}>
           <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>
-              {peer.full_name}
-            </Text>
+            <Text style={styles.name}>{peer.full_name}</Text>
             <Text style={styles.age}>, {peer.age}</Text>
           </View>
-          <Text style={styles.username} numberOfLines={1}>
-            @{peer.username}
-          </Text>
-          <Text style={styles.lastActive}>
-            Active {formatRelativeTime(peer.last_active_at)}
-          </Text>
+          <Text style={styles.username}>@{peer.username}</Text>
         </View>
-
-        <View style={styles.signalContainer}>
-          <SignalIndicator signal={peer.signal_strength} />
-        </View>
+        <SignalIndicator strength={peer.signal_strength} />
       </View>
 
       <View style={styles.footer}>
         <DistanceBadge distance={peer.formatted_distance} />
-        <View style={styles.statusBadge}>
-          <View style={[styles.statusDot, { backgroundColor: presenceColor }]} />
-          <Text style={styles.statusText}>
-            {peer.presence_status.charAt(0).toUpperCase() + peer.presence_status.slice(1)}
-          </Text>
+        <View style={styles.presenceContainer}>
+          <View 
+            style={[
+              styles.presenceDot, 
+              { backgroundColor: peer.presence_status === 'online' ? theme.colors.success : theme.colors.text.secondary }
+            ]} 
+          />
+          <Text style={styles.presenceText}>{peer.presence_status}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -69,23 +55,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  avatarContainer: {
-    position: 'relative',
-  },
-  presenceDot: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: theme.colors.surface,
-  },
-  infoContainer: {
+  info: {
     flex: 1,
     marginLeft: theme.spacing.md,
-    justifyContent: 'center',
   },
   nameRow: {
     flexDirection: 'row',
@@ -95,7 +67,6 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
-    flexShrink: 1,
   },
   age: {
     fontSize: theme.typography.fontSize.md,
@@ -106,16 +77,6 @@ const styles = StyleSheet.create({
     color: theme.colors.text.secondary,
     marginTop: 2,
   },
-  lastActive: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.tertiary,
-    marginTop: 4,
-  },
-  signalContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingLeft: theme.spacing.sm,
-  },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -125,23 +86,19 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
   },
-  statusBadge: {
+  presenceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surfaceLight,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 4,
-    borderRadius: theme.borderRadius.full,
   },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  presenceDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     marginRight: 6,
   },
-  statusText: {
+  presenceText: {
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.secondary,
-    fontWeight: theme.typography.fontWeight.medium,
+    textTransform: 'capitalize',
   },
 });
