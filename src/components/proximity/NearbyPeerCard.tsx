@@ -13,9 +13,9 @@ interface NearbyPeerCardProps {
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.header}>
-        <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={48} />
+        <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
         <View style={styles.info}>
           <View style={styles.nameRow}>
             <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
@@ -27,8 +27,8 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
       </View>
       <View style={styles.footer}>
         <DistanceBadge distance={peer.formatted_distance} />
-        <View style={[styles.statusDot, { backgroundColor: peer.presence_status === 'online' ? theme.colors.success : theme.colors.text.tertiary }]} />
-        <Text style={styles.statusText}>{peer.presence_status}</Text>
+        <View style={[styles.presenceDot, { backgroundColor: peer.presence_status === 'online' ? theme.colors.success : theme.colors.text.secondary }]} />
+        <Text style={styles.presenceText}>{peer.presence_status}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -46,12 +46,10 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
   },
   info: {
     flex: 1,
     marginLeft: 12,
-    marginRight: 8,
   },
   nameRow: {
     flexDirection: 'row',
@@ -59,7 +57,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: theme.colors.text.primary,
   },
   age: {
@@ -74,18 +72,19 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 12,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
-    paddingTop: 10,
   },
-  statusDot: {
+  presenceDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
     marginLeft: 12,
     marginRight: 6,
   },
-  statusText: {
+  presenceText: {
     fontSize: 12,
     color: theme.colors.text.secondary,
     textTransform: 'capitalize',
