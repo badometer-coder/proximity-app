@@ -1,97 +1,72 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import * as Location from 'expo-location';
-import type { GPSCoordinates, LocationPermissionStatus } from '../../types';
+import { GPSCoordinates } from '../../types';
 
-interface UseCurrentLocationReturn {
-  location: GPSCoordinates | null;
-  permissionStatus: LocationPermissionStatus;
-  isLoading: boolean;
-  error: string | null;
-  requestPermission: () => Promise<boolean>;
-}
-
-export const useCurrentLocation = (): UseCurrentLocationReturn => {
+export const useCurrentLocation = () => {
   const [location, setLocation] = useState<GPSCoordinates | null>(null);
-  const [permissionStatus, setPermissionStatus] = useState<LocationPermissionStatus>('undetermined');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const isMountedRef = useRef(true);
-  const watchRef = useRef<Location.LocationSubscription | null>(null);
-
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-      watchRef.current?.remove();
-    };
-  }, []);
+  const [permissionStatus, setPermissionStatus] = useState<string>('undetermined');
 
   const requestPermission = useCallback(async (): Promise<boolean> => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      const mappedStatus = status === 'granted' ? 'granted' : 'denied';
-      if (isMountedRef.current) setPermissionStatus(mappedStatus);
-
-      if (mappedStatus !== 'granted') {
-        if (isMountedRef.current) setError('Location permission denied.');
+      setPermissionStatus(status);
+      if (status !== 'granted') {
+        setError('Location permission denied');
+        setIsLoading(false);
         return false;
       }
+      setError(null);
       return true;
-    } catch (err) {
-      if (isMountedRef.current) setError('Failed to request permission');
+    } catch (err: any) {
+      setError(err?.message || 'Failed to request permission');
+      setIsLoading(false);
       return false;
     }
   }, []);
 
-  useEffect(() => {
-    if (permissionStatus !== 'granted') return;
-
+  const getCurrentLocation = useCallback(async () => {
     setIsLoading(true);
+    try {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      setPermissionStatus(status);
 
-    const startWatching = async () => {
-      try {
-        const subscription = await Location.watchPositionAsync(
-          {
-            accuracy: Location.Accuracy.High,
-            timeInterval: 10000,
-            distanceInterval: 5,
-          },
-          (newLocation) => {
-            if (!isMountedRef.current) return;
-
-            const coordinates: GPSCoordinates = {
-              latitude: newLocation.coords.latitude,
-              longitude: newLocation.coords.longitude,
-              accuracy: newLocation.coords.accuracy ?? 0,
-              altitude: newLocation.coords.altitude,
-              speed: newLocation.coords.speed,
-              heading: newLocation.coords.heading,
-              timestamp: newLocation.timestamp,
-            };
-
-            setLocation(coordinates);
-            setIsLoading(false);
-          }
-        );
-
-        if (isMountedRef.current) {
-          watchRef.current = subscription;
+      if (status !== 'granted') {
+        const granted = await requestPermission();
+        if (!granted) {
           setIsLoading(false);
-        }
-      } catch (err) {
-        if (isMountedRef.current) {
-          setError('Failed to start location tracking');
-          setIsLoading(false);
+          return;
         }
       }
-    };
 
-    startWatching();
+      const currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
 
-    return () => {
-      watchRef.current?.remove();
-      watchRef.current = null;
-    };
-  }, [permissionStatus]);
+      setLocation({
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+        accuracy: currentLocation.coords.accuracy,
+      });
+      setError(null);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to get current location');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [requestPermission]);
 
-  return { location, permissionStatus, isLoading, error, requestPermission };
+  useEffect(() => {
+    getCurrentLocation();
+  }, [getCurrentLocation]);
+
+  return {
+    location,
+    isLoading,
+    error,
+    permissionStatus,
+    requestPermission,
+    refresh: getCurrentLocation,
+  };
 };
