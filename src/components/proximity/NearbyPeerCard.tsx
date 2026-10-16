@@ -5,7 +5,7 @@ import { Avatar } from '../common/Avatar';
 import { SignalIndicator } from './SignalIndicator';
 import { DistanceBadge } from './DistanceBadge';
 import { theme } from '../../constants/theme';
-import { getPresenceColor, formatRelativeTime } from '../../lib/utils';
+import { getPresenceColor } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -16,25 +16,30 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
   const presenceColor = getPresenceColor(peer.presence_status);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
           <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
         </View>
-
         <View style={styles.info}>
           <View style={styles.nameRow}>
             <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
             <Text style={styles.age}>, {peer.age}</Text>
           </View>
           <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
-          <Text style={styles.lastActive}>Active {formatRelativeTime(peer.last_active_at)}</Text>
         </View>
-
-        <View style={styles.badges}>
+        <View style={styles.badgeContainer}>
           <DistanceBadge distance={peer.formatted_distance} />
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <View style={styles.signalRow}>
           <SignalIndicator strength={peer.signal_strength} />
+          <Text style={styles.presenceText}>
+            {peer.presence_status === 'online' ? 'Online now' : peer.presence_status === 'recently' ? 'Active recently' : 'Offline'}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -44,9 +49,9 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -56,15 +61,15 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     position: 'relative',
-    marginRight: 14,
+    marginRight: theme.spacing.md,
   },
   presenceDot: {
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     borderWidth: 2,
     borderColor: theme.colors.surface,
   },
@@ -74,31 +79,42 @@ const styles = StyleSheet.create({
   },
   nameRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'baseline',
   },
   name: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
+    flexShrink: 1,
   },
   age: {
-    fontSize: 16,
-    fontWeight: '400',
+    fontSize: theme.typography.fontSize.md,
     color: theme.colors.text.secondary,
   },
   username: {
-    fontSize: 13,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
     marginTop: 2,
   },
-  lastActive: {
-    fontSize: 11,
-    color: theme.colors.text.tertiary,
-    marginTop: 4,
-  },
-  badges: {
+  badgeContainer: {
     alignItems: 'flex-end',
-    justifyContent: 'center',
-    gap: 6,
+  },
+  footer: {
+    marginTop: theme.spacing.sm,
+    paddingTop: theme.spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.divider,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  signalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  presenceText: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.text.tertiary,
+    marginLeft: theme.spacing.xs,
   },
 });
