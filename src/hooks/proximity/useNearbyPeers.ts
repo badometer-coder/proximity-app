@@ -2,62 +2,68 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../config/supabase';
 import { useCurrentLocation } from '../location/useCurrentLocation';
 
-export interface NearbyPeer {
+export interface Peer {
   id: string;
   username: string;
   full_name: string;
-  avatar_url?: string;
   latitude: number;
   longitude: number;
   distance?: number;
-  status_message?: string;
+  last_seen?: string;
+  avatar_url?: string;
 }
 
-export interface UseNearbyPeersReturn {
-  peers: NearbyPeer[];
-  radius: number;
-  setRadius: (radius: number) => void;
-  loading: boolean;
-  refreshPeers: () => Promise<void>;
-}
-
-export const useNearbyPeers = (): UseNearbyPeersReturn => {
-  const [peers, setPeers] = useState<NearbyPeer[]>([]);
-  const [radius, setRadius] = useState<number>(5); // default 5km
-  const [loading, setLoading] = useState<boolean>(false);
-  const { location } = useCurrentLocation();
+export const useNearbyPeers = (radiusKm: number = 10) => {
+  const [peers, setPeers] = useState<Peer[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const { location, getCurrentLocation } = useCurrentLocation();
 
   const fetchPeers = useCallback(async () => {
-    if (!location) return;
-    setLoading(true);
     try {
-      const { data, error } = await (supabase as any)
+      setLoading(true);
+      setError(null);
+
+      // Fetch profiles from Supabase
+      const { data, err } = await (supabase as any)
         .from('profiles')
         .select('*');
 
-      if (error) {
-        console.error('Error fetching nearby peers:', error);
-      } else if (data) {
-        // Mock distance calculation or filter if location available
-        const mapped = data.map((profile: any, idx: number) => ({
-          id: profile.id,
-          username: profile.username || 'user',
-          full_name: profile.full_name || 'Anonymous',
-          avatar_url: profile.avatar_url,
-          latitude: profile.latitude || location.coords.latitude + (idx * 0.01),
-          longitude: profile.longitude || location.coords.longitude + (idx * 0.01),
-          distance: Math.round((idx + 1) * 0.8 * 10) / 10,
-          status_message: profile.status_message || 'Exploring the area'
-        })).filter((p: NearbyPeer) => (p.distance ?? 0) <= radius);
+      if (err) throw err;
 
-        setPeers(mapped);
+      if (data && location) {
+        // Calculate distance for each peer
+        const peersWithDistance = data.map((peer: any) => {
+          let distance = 0;
+          if (peer.latitude && peer.longitude) {
+            distance = calculateDistance(
+              location.latitude,
+              location.longitude,
+              peer.latitude,
+              peer.longitude
+            );
+          }
+          return {
+            ...peer,
+            distance,
+          };
+        });
+
+        // Filter by radius
+        const filtered = peersWithDistance.filter(
+          (peer: Peer) => peer.distance !== undefined && peer.distance <= radiusKm
+        );
+
+        setPeers(filtered);
+      } else {
+        setPeers([]);
       }
-    } catch (err) {
-      console.error('Unexpected error fetching peers:', err);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch nearby peers');
     } finally {
       setLoading(false);
     }
-  }, [location, radius]);
+  }, [location, radiusKm]);
 
   useEffect(() => {
     fetchPeers();
@@ -65,9 +71,26 @@ export const useNearbyPeers = (): UseNearbyPeersReturn => {
 
   return {
     peers,
-    radius,
-    setRadius,
     loading,
+    error,
     refreshPeers: fetchPeers,
   };
 };
+
+// Haversine formula to calculate distance in KM between two lat/lng points
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const d = R * c; // Distance in km
+  return Math.round(d * 10) / 10; // Round to 1 decimal place
+}
+
+function deg2rad(deg: number): number {
+  return deg * (Math.PI / 180);
+}
