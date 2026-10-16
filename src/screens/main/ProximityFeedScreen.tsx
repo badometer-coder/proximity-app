@@ -61,7 +61,7 @@ export const ProximityFeedScreen = ({ navigation }: { navigation?: any }) => {
             />
           )
         }
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} colors={[theme.colors.primary.main]} />}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={theme.colors.primary.main} />}
         contentContainerStyle={[styles.list, peers.length === 0 && !isInitialLoading && styles.centerList]}
       />
 
