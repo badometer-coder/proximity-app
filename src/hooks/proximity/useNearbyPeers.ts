@@ -1,13 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../config/supabase';
-import { FormattedNearbyPeer, NearbyPeer, GPSCoordinates, ApiError } from '../../types';
-import { formatDistance, getSignalStrength, getPresenceStatus } from '../../lib/utils';
+import { 
+  GPSCoordinates, 
+  NearbyPeer, 
+  FormattedNearbyPeer, 
+  ApiError, 
+  SignalStrength, 
+  UserPresenceStatus 
+} from '../../types';
+import { 
+  formatDistance, 
+  getSignalStrength, 
+  getPresenceStatus 
+} from '../../lib/utils';
 import { useAuth } from '../auth/useAuth';
 
 export const useNearbyPeers = (location: GPSCoordinates | null) => {
   const { user } = useAuth();
   const [peers, setPeers] = useState<FormattedNearbyPeer[]>([]);
-  const [selectedRadius, setSelectedRadius] = useState<number>(500);
+  const [selectedRadius, setSelectedRadius] = useState<number>(500); // meters
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<ApiError | null>(null);
@@ -37,31 +48,36 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
       });
 
       if (rpcError) {
-        setError({
-          code: rpcError.code || 'UNKNOWN',
+        throw {
+          code: rpcError.code || 'RPC_ERROR',
           message: rpcError.message,
           details: rpcError.details ? { details: rpcError.details } : undefined,
-        });
-        setPeers([]);
-      } else if (data) {
-        const rawPeers = data as unknown as NearbyPeer[];
-        const formatted: FormattedNearbyPeer[] = rawPeers.map((peer) => ({
-          ...peer,
-          formatted_distance: formatDistance(peer.distance_meters),
-          signal_strength: getSignalStrength(peer.distance_meters),
-          presence_status: getPresenceStatus(peer.last_active_at),
-        }));
-        setPeers(formatted);
-        setLastFetchedAt(new Date().toISOString());
-      } else {
-        setPeers([]);
+        };
       }
+
+      const rawPeers: NearbyPeer[] = (data as NearbyPeer[]) || [];
+
+      const formatted: FormattedNearbyPeer[] = rawPeers.map((peer) => {
+        const signal_strength: SignalStrength = getSignalStrength(peer.distance_meters);
+        const presence_status: UserPresenceStatus = getPresenceStatus(peer.last_active_at);
+        const formatted_distance = formatDistance(peer.distance_meters);
+
+        return {
+          ...peer,
+          formatted_distance,
+          signal_strength,
+          presence_status,
+        };
+      });
+
+      setPeers(formatted);
+      setLastFetchedAt(new Date().toISOString());
     } catch (err: any) {
       setError({
-        code: 'EXCEPTION',
-        message: err?.message || 'Failed to fetch nearby peers',
+        code: err.code || 'UNKNOWN_ERROR',
+        message: err.message || 'Failed to fetch nearby peers',
+        details: err.details,
       });
-      setPeers([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
