@@ -1,12 +1,18 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { RadiusFilter } from '../../types';
 import { theme } from '../../constants/theme';
+
+interface RadiusFilter {
+  id: string;
+  name?: string;
+  label?: string;
+  radiusKm: number;
+}
 
 interface RadiusFilterPillProps {
   filter: RadiusFilter;
   isSelected: boolean;
-  onSelect: (filter: RadiusFilter) => void;
+  onSelect: (radiusKm: number) => void;
 }
 
 export const RadiusFilterPill: React.FC<RadiusFilterPillProps> = ({
@@ -16,12 +22,20 @@ export const RadiusFilterPill: React.FC<RadiusFilterPillProps> = ({
 }) => {
   return (
     <TouchableOpacity
-      style={[styles.pill, isSelected && styles.selectedPill]}
-      onPress={() => onSelect(filter)}
+      style={[
+        styles.pill,
+        isSelected && styles.selectedPill,
+      ]}
+      onPress={() => onSelect(filter.radiusKm)}
       activeOpacity={0.7}
     >
-      <Text style={[styles.text, isSelected && styles.selectedText]}>
-        {filter.label}
+      <Text
+        style={[
+          styles.text,
+          isSelected && styles.selectedText,
+        ]}
+      >
+        {filter.name || filter.label || `${filter.radiusKm} km`}
       </Text>
     </TouchableOpacity>
   );
@@ -31,7 +45,7 @@ const styles = StyleSheet.create({
   pill: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: theme.borderRadius.full,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -42,12 +56,12 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primary.main,
   },
   text: {
-    color: theme.colors.text.secondary,
     fontSize: 14,
+    color: theme.colors.text.secondary,
     fontWeight: '500',
   },
   selectedText: {
-    color: '#FFFFFF',
+    color: theme.colors.text.primary,
     fontWeight: '600',
   },
 });
