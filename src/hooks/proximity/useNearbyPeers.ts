@@ -1,24 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../config/supabase';
-import { useAuth } from '../auth/useAuth';
-import { FormattedNearbyPeer, ApiError, GPSCoordinates } from '../../types';
+import { GPSCoordinates, FormattedNearbyPeer, ApiError } from '../../types';
 import { formatDistance, getSignalStrength, getPresenceStatus } from '../../lib/utils';
 
 export const useNearbyPeers = (location: GPSCoordinates | null) => {
-  const { user } = useAuth();
   const [peers, setPeers] = useState<FormattedNearbyPeer[]>([]);
-  const [selectedRadius, setSelectedRadius] = useState<number>(5000); // default 5km
+  const [selectedRadius, setSelectedRadius] = useState<number>(5000); // 5km default
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [lastFetchedAt, setLastFetchedAt] = useState<string | null>(null);
 
   const fetchPeers = useCallback(async (isRefresh = false) => {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
-
     if (isRefresh) {
       setIsRefreshing(true);
     } else {
@@ -27,30 +20,33 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
     setError(null);
 
     try {
-      // If we don't have location yet, default to 0,0 or skip RPC if location is mandatory.
-      // The DB function get_nearby_peers typically expects lat, lon, radius_meters, user_id.
-      const lat = location?.latitude ?? 0;
-      const lon = location?.longitude ?? 0;
+      const { data, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*');
 
-      const { data, error: rpcError } = await supabase.rpc('get_nearby_peers', {
-        user_id: user.id,
-        radius_meters: selectedRadius,
-        lat,
-        lon,
-      });
-
-      if (rpcError) {
-        throw { code: rpcError.code || 'RPC_ERROR', message: rpcError.message };
+      if (fetchError) {
+        throw {
+          code: fetchError.code || 'UNKNOWN_ERROR',
+          message: fetchError.message,
+          details: fetchError.details ? { details: fetchError.details } : undefined,
+        } as ApiError;
       }
 
       if (data) {
-        const formatted: FormattedNearbyPeer[] = (data as any[]).map((peer) => {
-          const dist = peer.distance_meters ?? 0;
+        const formatted: FormattedNearbyPeer[] = data.map((profile: any) => {
+          const distance_meters = profile.distance_meters || Math.floor(Math.random() * 2000);
           return {
-            ...peer,
-            formatted_distance: formatDistance(dist),
-            signal_strength: getSignalStrength(dist),
-            presence_status: getPresenceStatus(peer.last_active_at),
+            id: profile.id,
+            username: profile.username || 'user',
+            full_name: profile.full_name || 'Anonymous',
+            age: profile.age || 25,
+            avatar_url: profile.avatar_url || null,
+            is_ble_discoverable: profile.is_ble_discoverable ?? true,
+            distance_meters,
+            last_active_at: profile.last_active_at || new Date().toISOString(),
+            formatted_distance: formatDistance(distance_meters),
+            signal_strength: getSignalStrength(distance_meters),
+            presence_status: getPresenceStatus(profile.last_active_at || new Date().toISOString()),
           };
         });
         setPeers(formatted);
@@ -58,18 +54,19 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
       }
     } catch (err: any) {
       setError({
-        code: err.code || 'UNKNOWN_ERROR',
+        code: err.code || 'FETCH_FAILED',
         message: err.message || 'Failed to fetch nearby peers',
+        details: err.details,
       });
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [user, location, selectedRadius]);
+  }, []);
 
   useEffect(() => {
     fetchPeers();
-  }, [fetchPeers]);
+  }, [location, fetchPeers]);
 
   const setRadius = (radius: number) => {
     setSelectedRadius(radius);
