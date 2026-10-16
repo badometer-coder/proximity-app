@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { FormattedNearbyPeer } from '../../types';
-import { theme } from '../../constants/theme';
 import { Avatar } from '../common/Avatar';
 import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
+import { theme } from '../../constants/theme';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -13,32 +13,40 @@ interface NearbyPeerCardProps {
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.header}>
-        <Avatar uri={peer.avatar_url ?? null} name={peer.full_name} size={48} />
-        <View style={styles.info}>
-          <Text style={styles.name}>{peer.full_name}</Text>
-          <Text style={styles.username}>@{peer.username}</Text>
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
+      <View style={styles.leftContent}>
+        <View style={styles.avatarContainer}>
+          <Avatar url={peer.avatarUrl} name={peer.username} size={48} />
+          {peer.isOnline && <View style={styles.onlineBadge} />}
         </View>
-        <SignalIndicator rssi={peer.rssi} />
+
+        <View style={styles.info}>
+          <View style={styles.headerRow}>
+            <Text style={styles.name} numberOfLines={1}>{peer.username}</Text>
+            {peer.age && <Text style={styles.age}>, {peer.age}</Text>}
+          </View>
+          {peer.bio && (
+            <Text style={styles.bio} numberOfLines={1}>{peer.bio}</Text>
+          )}
+          <Text style={styles.statusText}>{peer.isOnline ? 'Online' : 'Offline'}</Text>
+        </View>
       </View>
 
-      {peer.status ? (
-        <Text style={styles.status} numberOfLines={2}>
-          "{peer.status}"
-        </Text>
-      ) : null}
-
-      <View style={styles.footer}>
-        <DistanceBadge distanceMeters={peer.distance_meters} />
-        <Text style={styles.timestamp}>{peer.last_seen}</Text>
+      <View style={styles.rightContent}>
+        <DistanceBadge distance={peer.distanceFormatted} />
+        <View style={styles.signalWrapper}>
+          <SignalIndicator rssiLevel={peer.rssiLevel} />
+        </View>
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
@@ -46,44 +54,59 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  header: {
+  leftContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    marginRight: theme.spacing.md,
+  },
+  avatarContainer: {
+    position: 'relative',
+    marginRight: theme.spacing.md,
+  },
+  onlineBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: theme.colors.success,
+    borderWidth: 2,
+    borderColor: theme.colors.surface,
   },
   info: {
     flex: 1,
-    marginLeft: theme.spacing.md,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
   },
   name: {
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
   },
-  username: {
+  age: {
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text.secondary,
+  },
+  bio: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
-    marginTop: 2,
+    marginBottom: 4,
   },
-  status: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text.secondary,
-    fontStyle: 'italic',
-    marginTop: theme.spacing.sm,
-    backgroundColor: theme.colors.surfaceLight,
-    padding: theme.spacing.sm,
-    borderRadius: theme.borderRadius.sm,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: theme.spacing.md,
-    paddingTop: theme.spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.divider,
-  },
-  timestamp: {
+  statusText: {
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.tertiary,
+  },
+  rightContent: {
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    height: '100%',
+  },
+  signalWrapper: {
+    marginTop: theme.spacing.xs,
   },
 });
