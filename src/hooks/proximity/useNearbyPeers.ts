@@ -25,38 +25,38 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
         .select('*');
 
       if (fetchError) {
-        setError({
+        throw {
           code: fetchError.code || 'UNKNOWN_ERROR',
           message: fetchError.message,
           details: fetchError.details ? { details: fetchError.details } : undefined,
-        });
-        setPeers([]);
-      } else if (data) {
-        const formatted: FormattedNearbyPeer[] = (data as any[]).map((p) => {
-          const distance_meters = p.distance_meters ?? 150;
-          return {
-            id: p.id,
-            username: p.username || '',
-            full_name: p.full_name || '',
-            age: p.age || 18,
-            avatar_url: p.avatar_url || null,
-            is_ble_discoverable: p.is_ble_discoverable ?? true,
-            distance_meters,
-            last_active_at: p.last_active_at || new Date().toISOString(),
-            formatted_distance: formatDistance(distance_meters),
-            signal_strength: getSignalStrength(distance_meters),
-            presence_status: getPresenceStatus(p.last_active_at),
-          };
-        });
-        setPeers(formatted);
-        setLastFetchedAt(new Date().toISOString());
+        } as ApiError;
       }
+
+      const formattedPeers: FormattedNearbyPeer[] = (data || []).map((profile: any) => {
+        const distanceMeters = profile.distance_meters ?? Math.floor(Math.random() * 2000);
+        return {
+          id: profile.id,
+          username: profile.username || 'user',
+          full_name: profile.full_name || 'Anonymous',
+          age: profile.age || 25,
+          avatar_url: profile.avatar_url || null,
+          is_ble_discoverable: profile.is_ble_discoverable ?? true,
+          distance_meters: distanceMeters,
+          last_active_at: profile.last_active_at || new Date().toISOString(),
+          formatted_distance: formatDistance(distanceMeters),
+          signal_strength: getSignalStrength(distanceMeters),
+          presence_status: getPresenceStatus(profile.last_active_at),
+        };
+      });
+
+      setPeers(formattedPeers);
+      setLastFetchedAt(new Date().toLocaleTimeString());
     } catch (err: any) {
       setError({
-        code: 'EXCEPTION',
-        message: err?.message || 'Failed to fetch nearby peers',
+        code: err.code || 'FETCH_FAILED',
+        message: err.message || 'Failed to fetch nearby peers',
+        details: err.details,
       });
-      setPeers([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -65,7 +65,7 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
 
   useEffect(() => {
     fetchPeers();
-  }, [location, selectedRadius, fetchPeers]);
+  }, [fetchPeers, location, selectedRadius]);
 
   const refresh = async () => {
     await fetchPeers(true);
