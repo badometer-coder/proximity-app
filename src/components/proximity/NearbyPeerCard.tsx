@@ -1,35 +1,30 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { FormattedNearbyPeer, UserPresenceStatus } from '../../types';
+import { FormattedNearbyPeer } from '../../types';
 import { Avatar } from '../common/Avatar';
 import { SignalIndicator } from './SignalIndicator';
 import { DistanceBadge } from './DistanceBadge';
 import { theme } from '../../constants/theme';
-import { formatRelativeTime } from '../../lib/utils';
+import { getPresenceColor, getPresenceStatus } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
   onPress: () => void;
 }
 
-const PRESENCE_COLORS: Record<UserPresenceStatus, string> = {
-  online: theme.colors.success,
-  recently: theme.colors.warning,
-  offline: theme.colors.text.tertiary,
-};
-
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
-  const presenceColor = PRESENCE_COLORS[peer.presence_status] || theme.colors.text.tertiary;
+  const presence = getPresenceStatus(peer.last_active_at);
+  const presenceColor = getPresenceColor(presence);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.header}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+      <View style={styles.headerRow}>
         <View style={styles.avatarContainer}>
-          <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
+          <Avatar uri={peer.avatar_url} name={peer.full_name} size={50} />
           <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
         </View>
 
-        <View style={styles.info}>
+        <View style={styles.infoContainer}>
           <View style={styles.nameRow}>
             <Text style={styles.name} numberOfLines={1}>
               {peer.full_name}, {peer.age}
@@ -42,12 +37,14 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
         </View>
       </View>
 
-      <View style={styles.footer}>
-        <View style={styles.footerItem}>
+      <View style={styles.footerRow}>
+        <View style={styles.signalRow}>
           <SignalIndicator strength={peer.signal_strength} />
+          <Text style={styles.signalText}>{peer.signal_strength.toUpperCase()}</Text>
         </View>
-        <Text style={styles.lastActive}>
-          Active {formatRelativeTime(peer.last_active_at)}
+
+        <Text style={styles.presenceText}>
+          {presence === 'online' ? 'Online now' : presence === 'recently' ? 'Active recently' : 'Offline'}
         </Text>
       </View>
     </TouchableOpacity>
@@ -63,7 +60,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  header: {
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -73,20 +70,20 @@ const styles = StyleSheet.create({
   },
   presenceDot: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    bottom: 2,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     borderWidth: 2,
     borderColor: theme.colors.surface,
   },
-  info: {
+  infoContainer: {
     flex: 1,
   },
   nameRow: {
     flexDirection: 'row',
-    alignItem: 'center',
+    alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 2,
   },
@@ -101,7 +98,7 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
   },
-  footer: {
+  footerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -110,11 +107,17 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
   },
-  footerItem: {
+  signalRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  lastActive: {
+  signalText: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.text.secondary,
+    marginLeft: theme.spacing.xs,
+    fontWeight: theme.typography.fontWeight.medium,
+  },
+  presenceText: {
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.tertiary,
   },

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { ChatMessage } from '../../types';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
 import { theme } from '../../constants/theme';
-import { ChatMessage } from '../../types';
 
 interface ChatThreadScreenProps {
   userId: string;
@@ -30,14 +30,16 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack}>
-          <Text style={styles.backButton}>Back</Text>
+          <Text style={styles.backText}>{'< Back'}</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{userName}</Text>
+        <View style={{ width: 40 }} />
       </View>
 
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.messageList}
         renderItem={({ item }) => {
           const isMe = item.sender_id === myId;
           return (
@@ -46,7 +48,6 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
             </View>
           );
         }}
-        contentContainerStyle={styles.messageList}
       />
 
       <View style={styles.inputContainer}>
@@ -73,16 +74,18 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
-    paddingTop: 48,
   },
-  backButton: {
+  backText: {
     color: theme.colors.primary.main,
     fontSize: 16,
-    marginRight: 16,
+    fontWeight: '500',
   },
   headerTitle: {
     color: theme.colors.text.primary,
@@ -93,10 +96,10 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   messageBubble: {
+    maxWidth: '75%',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 8,
-    maxWidth: '80%',
   },
   myMessage: {
     backgroundColor: theme.colors.primary.main,
@@ -109,7 +112,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
   messageText: {
-    color: theme.colors.text.primary,
+    color: '#FFFFFF',
     fontSize: 15,
   },
   inputContainer: {
@@ -124,10 +127,11 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    color: theme.colors.text.primary,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    color: '#FFFFFF',
+    fontSize: 15,
     marginRight: 8,
   },
   sendButton: {
@@ -135,10 +139,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 20,
   },
   sendButtonText: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontWeight: '600',
+    fontSize: 15,
   },
 });
