@@ -1,41 +1,32 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { theme } from '../../constants/theme';
 import { useCurrentLocation } from '../../hooks/location/useCurrentLocation';
 import { useNearbyPeers } from '../../hooks/proximity/useNearbyPeers';
+import { NearbyPeerCard } from '../../components/proximity/NearbyPeerCard';
 import { ProximityHeader } from '../../components/proximity/ProximityHeader';
 import { RadiusSlider } from '../../components/proximity/RadiusSlider';
-import { NearbyPeerCard } from '../../components/proximity/NearbyPeerCard';
 import { EmptyState } from '../../components/common/EmptyState';
-import { theme } from '../../constants/theme';
+import { ChatThreadScreen } from './ChatThreadScreen';
 import { FormattedNearbyPeer } from '../../types';
+import { useAuth } from '../../hooks/auth/useAuth';
 
 export default function HomeScreen() {
-  const { location, isLoading: locationLoading, permissionStatus, requestPermission } = useCurrentLocation();
-  const { peers, selectedRadius, isLoading: peersLoading, isRefreshing, error, lastFetchedAt, setRadius, refresh } = useNearbyPeers(location);
+  const { location, isLoading: locationLoading, error: locationError, requestPermission } = useCurrentLocation();
+  const { peers, selectedRadius, isLoading, isRefreshing, error, lastFetchedAt, setRadius, refresh } = useNearbyPeers(location);
+  const { user } = useAuth();
+
   const [selectedPeer, setSelectedPeer] = useState<FormattedNearbyPeer | null>(null);
 
-  if (locationLoading) {
+  if (selectedPeer) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={theme.colors.primary.main} />
-        <Text style={styles.loadingText}>Getting your location...</Text>
-      </View>
-    );
-  }
-
-  if (permissionStatus !== 'granted') {
-    return (
-      <View style={styles.center}>
-        <EmptyState
-          icon="location-outline"
-          title="Location Permission Required"
-          description="We need your location to find people nearby."
-        />
-        <TouchableOpacity style={styles.button} onPress={requestPermission}>
-          <Text style={styles.buttonText}>Grant Permission</Text>
-        </TouchableOpacity>
-      </View>
+      <ChatThreadScreen
+        userId={selectedPeer.id}
+        userName={selectedPeer.full_name || selectedPeer.username}
+        myId={user?.id ?? null}
+        onBack={() => setSelectedPeer(null)}
+      />
     );
   }
 
@@ -43,22 +34,24 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <ProximityHeader lastUpdated={lastFetchedAt} />
 
-      <View style={styles.filterSection}>
-        <View style={styles.radiusHeader}>
-          <Text style={styles.radiusLabel}>Search Radius</Text>
-          <Text style={styles.radiusValue}>{selectedRadius} meters</Text>
-        </View>
-        <RadiusSlider value={selectedRadius} onValueChange={setRadius} />
-      </View>
-
-      {error && (
-        <View style={styles.errorBanner}>
-          <Ionicons name="alert-circle" size={20} color={theme.colors.error} />
-          <Text style={styles.errorText}>{error.message}</Text>
+      {locationError && (
+        <View style={styles.banner}>
+          <Text style={styles.bannerText}>Location permission needed to find nearby peers.</Text>
+          <TouchableOpacity style={styles.bannerButton} onPress={requestPermission}>
+            <Text style={styles.bannerButtonText}>Grant</Text>
+          </TouchableOpacity>
         </View>
       )}
 
-      {peersLoading && !isRefreshing ? (
+      <View style={styles.sliderContainer}>
+        <View style={styles.sliderLabelRow}>
+          <Text style={styles.sliderLabel}>Radius</Text>
+          <Text style={styles.sliderValue}>{selectedRadius}m</Text>
+        </View>
+        <RadiusSlider value={selectedRadius} onValueChange={(val: number) => setRadius(val)} />
+      </View>
+
+      {isLoading && !isRefreshing ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={theme.colors.primary.main} />
         </View>
@@ -78,9 +71,9 @@ export default function HomeScreen() {
           }
           ListEmptyComponent={
             <EmptyState
-              icon="people-outline"
-              title="No one nearby"
-              description="Try expanding your search radius to find more people."
+              icon={<Ionicons name="radio-outline" size={48} color={theme.colors.text.secondary} />}
+              title="No peers nearby"
+              description="Try expanding your radius or checking back when others are around."
             />
           }
         />
@@ -93,70 +86,67 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+    paddingTop: 48,
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.background,
-    padding: 24,
   },
-  loadingText: {
-    color: theme.colors.text.secondary,
-    marginTop: 12,
-    fontSize: 14,
+  banner: {
+    backgroundColor: theme.colors.surfaceLight,
+    padding: 12,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
-  filterSection: {
-    padding: 16,
+  bannerText: {
+    color: theme.colors.text.primary,
+    fontSize: 13,
+    flex: 1,
+    marginRight: 8,
+  },
+  bannerButton: {
+    backgroundColor: theme.colors.primary.main,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  bannerButtonText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  sliderContainer: {
     backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
-  radiusHeader: {
+  sliderLabelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 8,
   },
-  radiusLabel: {
+  sliderLabel: {
     color: theme.colors.text.secondary,
     fontSize: 14,
   },
-  radiusValue: {
+  sliderValue: {
     color: theme.colors.text.primary,
+    fontSize: 14,
     fontWeight: '600',
-    fontSize: 14,
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    padding: 12,
-    margin: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.error,
-  },
-  errorText: {
-    color: theme.colors.error,
-    marginLeft: 8,
-    fontSize: 14,
-    flex: 1,
   },
   listContainer: {
     padding: 16,
-    flexGrow: 1,
-  },
-  button: {
-    backgroundColor: theme.colors.primary.main,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 16,
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
+    paddingTop: 4,
   },
 });
