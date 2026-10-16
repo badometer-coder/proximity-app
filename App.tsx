@@ -13,7 +13,7 @@ import ProximityFeedScreen from './src/screens/main/ProximityFeedScreen';
 import { ChatThreadScreen } from './src/screens/main/ChatThreadScreen';
 import { supabase } from './src/config/supabase';
 import { theme } from './src/constants/theme';
-import { Profile as UserProfile } from './src/types';
+import { UserProfile } from './src/types';
 
 const Tab = createBottomTabNavigator();
 
