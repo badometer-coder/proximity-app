@@ -10,8 +10,8 @@ export const theme = {
     warning: '#EAB308',
     error: '#EF4444',
     orange: '#F97316',
-    background: '#F9FAFB',
-    surface: '#FFFFFF',
+    background: '#000000',
+    surface: '#111111',
     border: '#E5E7EB',
     divider: '#F3F4F6',
     text: {
