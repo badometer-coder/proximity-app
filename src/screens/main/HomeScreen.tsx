@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Switch, Alert } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Switch, Alert, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { openChat } from '../../../App';
@@ -58,6 +58,27 @@ export const HomeScreen: React.FC = () => {
         if (openChat) openChat(item.id, item.full_name || 'Chat');
       }}
     />
+  );
+
+  const renderFooter = () => (
+    <View style={[styles.footerContainer, { borderTopColor: colors.border }]}>
+      <View style={styles.footerLinks}>
+        <TouchableOpacity onPress={() => Linking.openURL('https://example.com/privacy')}>
+          <Text style={[styles.footerLinkText, { color: colors.secondaryText }]}>Privacy Policy</Text>
+        </TouchableOpacity>
+        <Text style={[styles.footerDot, { color: colors.secondaryText }]}>•</Text>
+        <TouchableOpacity onPress={() => Linking.openURL('https://example.com/terms')}>
+          <Text style={[styles.footerLinkText, { color: colors.secondaryText }]}>Terms of Service</Text>
+        </TouchableOpacity>
+        <Text style={[styles.footerDot, { color: colors.secondaryText }]}>•</Text>
+        <TouchableOpacity onPress={() => Linking.openURL('https://example.com/support')}>
+          <Text style={[styles.footerLinkText, { color: colors.secondaryText }]}>Support</Text>
+        </TouchableOpacity>
+      </View>
+      <Text style={[styles.copyrightText, { color: colors.secondaryText }]}>
+        © {new Date().getFullYear()} Proximity App. All rights reserved.
+      </Text>
+    </View>
   );
 
   return (
@@ -130,6 +151,7 @@ export const HomeScreen: React.FC = () => {
               </Text>
             </View>
           }
+          ListFooterComponent={renderFooter}
         />
       )}
     </SafeAreaView>
@@ -155,4 +177,9 @@ const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   list: { padding: 16, gap: 12 },
   emptyText: { fontSize: 16, textAlign: 'center' },
+  footerContainer: { marginTop: 24, paddingVertical: 20, paddingHorizontal: 16, borderTopWidth: 1, alignItems: 'center', gap: 12 },
+  footerLinks: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 },
+  footerLinkText: { fontSize: 12, fontWeight: '500', textDecorationLine: 'underline' },
+  footerDot: { fontSize: 12 },
+  copyrightText: { fontSize: 12, textAlign: 'center' },
 });
