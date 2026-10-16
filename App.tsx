@@ -4,10 +4,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuth } from './src/hooks/auth/useAuth';
 import { LoginScreen } from './src/screens/auth/LoginScreen';
 import { ProfileSetupScreen } from './src/screens/auth/ProfileSetupScreen';
-import { ProximityFeedScreen } from './src/screens/main/ProximityFeedScreen';
+import { HomeScreen } from './src/screens/main/HomeScreen';
 import { ChatThreadScreen } from './src/screens/main/ChatThreadScreen';
 import { supabase } from './src/config/supabase';
 import { ProfileRow } from './src/types/database';
+import { theme } from './src/constants/theme';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ProfileSetupTyped = ProfileSetupScreen as React.ComponentType<any>;
@@ -59,7 +60,7 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#6366F1" />
+          <ActivityIndicator size="large" color={theme.colors.primary.main} />
         </View>
       </SafeAreaProvider>
     );
@@ -78,7 +79,7 @@ export default function App() {
         </View>
 
         <View style={[styles.screen, screen !== 'feed' && styles.hidden]}>
-          <ProximityFeedScreen />
+          <HomeScreen />
         </View>
 
         <View style={[styles.screen, screen !== 'chat' && styles.hidden]}>
@@ -97,8 +98,8 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000000' },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000' },
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background },
   screen: { flex: 1 },
   hidden: { display: 'none' },
 });
