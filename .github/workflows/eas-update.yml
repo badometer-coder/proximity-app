@@ -27,7 +27,8 @@ jobs:
         run: npm install --legacy-peer-deps && npm install fs-extra --legacy-peer-deps
 
       - name: TypeScript check
-        run: npx tsc --noEmit --skipLibCheck
+        id: tsc
+        run: npx tsc --noEmit --skipLibCheck 2>&1 | tee /tmp/tsc-output.txt; exit ${PIPESTATUS[0]}
 
       - name: Publish update
         run: eas update --auto --non-interactive
@@ -37,6 +38,7 @@ jobs:
       - name: Notify agent on failure
         if: failure()
         run: |
+          TSC_ERRORS=$(cat /tmp/tsc-output.txt 2>/dev/null | grep "error TS" | head -10 || echo "See logs")
           curl -s -X POST "https://agent-swarm-ceti.onrender.com/ci-error" \
             -H "Content-Type: application/json" \
-            -d "{\"error\": \"EAS Update failed. Check logs at https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
+            -d "{\"error\": \"CI failed. TypeScript errors:\n${TSC_ERRORS}\nFull logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
