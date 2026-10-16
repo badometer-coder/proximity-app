@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   inner: { flex: 1, justifyContent: 'center', padding: 24 },
   title: { fontSize: 36, fontWeight: 'bold', color: theme.colors.primary.main, textAlign: 'center' },
   subtitle: { fontSize: 16, color: theme.colors.text.secondary, marginBottom: 40, textAlign: 'center' },
-  input: { backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 8, padding: 14, fontSize: 15, marginBottom: 16 },
+  input: { backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 8, padding: 14, fontSize: 15, marginBottom: 16, color: '#FFFFFF' },
   button: { backgroundColor: theme.colors.primary.main, padding: 16, borderRadius: 8, alignItems: 'center', marginBottom: 12 },
   buttonText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
   buttonOutline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: theme.colors.primary.main },
