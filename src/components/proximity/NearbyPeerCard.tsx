@@ -2,10 +2,11 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { FormattedNearbyPeer } from '../../types';
 import { Avatar } from '../common/Avatar';
-import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
+import { DistanceBadge } from './DistanceBadge';
+import { getPresenceColor, formatRelativeTime } from '../../lib/utils';
 import { theme } from '../../constants/theme';
-import { getPresenceColor } from '../../lib/utils';
+import { Ionicons } from '@expo/vector-icons';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -22,25 +23,20 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
           <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
           <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
         </View>
+
         <View style={styles.info}>
           <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>
-              {peer.full_name}
-            </Text>
-            <Text style={styles.age}>, {peer.age}</Text>
+            <Text style={styles.name} numberOfLines={1}>{peer.full_name || peer.username}</Text>
+            {peer.age ? <Text style={styles.age}>, {peer.age}</Text> : null}
           </View>
-          <Text style={styles.username} numberOfLines={1}>
-            @{peer.username}
-          </Text>
+          <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
+          <Text style={styles.lastActive}>Active {formatRelativeTime(peer.last_active_at)}</Text>
         </View>
-        <SignalIndicator strength={peer.signal_strength} />
-      </View>
 
-      <View style={styles.footer}>
-        <DistanceBadge distance={peer.formatted_distance} />
-        <Text style={styles.presenceText}>
-          {peer.presence_status === 'online' ? 'Online now' : peer.presence_status === 'recently' ? 'Active recently' : 'Offline'}
-        </Text>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+          <DistanceBadge distance={peer.formatted_distance} />
+          <SignalIndicator strength={peer.signal_strength} />
+        </div>
       </View>
     </TouchableOpacity>
   );
@@ -49,9 +45,9 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -61,7 +57,7 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     position: 'relative',
-    marginRight: theme.spacing.md,
+    marginRight: 14,
   },
   presenceDot: {
     position: 'absolute',
@@ -75,36 +71,31 @@ const styles = StyleSheet.create({
   },
   info: {
     flex: 1,
+    justifyContent: 'center',
   },
   nameRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
+    marginBottom: 2,
   },
   name: {
-    fontSize: theme.typography.fontSize.md,
-    fontWeight: theme.typography.fontWeight.semibold,
+    fontSize: 16,
+    fontWeight: '700',
     color: theme.colors.text.primary,
+    flexShrink: 1,
   },
   age: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: 16,
+    fontWeight: '500',
     color: theme.colors.text.secondary,
   },
   username: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: 13,
     color: theme.colors.text.secondary,
-    marginTop: 2,
+    marginBottom: 4,
   },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: theme.spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.divider,
-    paddingTop: theme.spacing.sm,
-  },
-  presenceText: {
-    fontSize: theme.typography.fontSize.xs,
+  lastActive: {
+    fontSize: 11,
     color: theme.colors.text.tertiary,
   },
 });
