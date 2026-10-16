@@ -13,7 +13,7 @@ interface NearbyPeerCardProps {
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
         <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
         <View style={styles.info}>
@@ -28,8 +28,10 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 
       <View style={styles.footer}>
         <DistanceBadge distance={peer.formatted_distance} />
-        <View style={[styles.presenceDot, { backgroundColor: peer.presence_status === 'online' ? theme.colors.success : peer.presence_status === 'recently' ? theme.colors.warning : theme.colors.text.tertiary }]} />
-        <Text style={styles.presenceText}>{peer.presence_status}</Text>
+        <View style={styles.presenceContainer}>
+          <View style={[styles.presenceDot, { backgroundColor: peer.presence_status === 'online' ? theme.colors.success : theme.colors.text.secondary }]} />
+          <Text style={styles.presenceText}>{peer.presence_status}</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -51,20 +53,18 @@ const styles = StyleSheet.create({
   info: {
     flex: 1,
     marginLeft: theme.spacing.md,
-    justifyContent: 'center',
   },
   nameRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'baseline',
   },
   name: {
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
-    flexShrink: 1,
   },
   age: {
-    fontSize: theme.typography.fontSize.md,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
   },
   username: {
@@ -74,18 +74,22 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: theme.spacing.md,
     paddingTop: theme.spacing.sm,
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
   },
+  presenceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   presenceDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginLeft: theme.spacing.md,
-    marginRight: theme.spacing.xs,
+    marginRight: 6,
   },
   presenceText: {
     fontSize: theme.typography.fontSize.xs,
