@@ -1,79 +1,77 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useAuth } from '../hooks/auth/useAuth';
 import { theme } from '../constants/theme';
 
-export function HomeScreen() {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+export const HomeScreen = () => {
+  const { signOut } = useAuth();
 
-  const currentTheme = {
-    background: isDarkMode ? theme.colors.background : '#FFFFFF',
-    surface: isDarkMode ? theme.colors.surface : '#F3F4F6',
-    text: isDarkMode ? theme.colors.text.primary : theme.colors.text.inverse,
-    secondaryText: isDarkMode ? theme.colors.text.secondary : theme.colors.text.tertiary,
-    border: isDarkMode ? theme.colors.border : '#E5E7EB',
+  const handleSignOut = async () => {
+    await signOut();
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.background }]}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: currentTheme.text }]}>Welcome Home</Text>
-        <TouchableOpacity
-          style={[styles.toggleButton, { backgroundColor: currentTheme.surface, borderColor: currentTheme.border }]}
-          onPress={() => setIsDarkMode(!isDarkMode)}
-        >
-          <Text style={[styles.toggleButtonText, { color: currentTheme.text }]}>
-            {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
-          </Text>
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <View style={styles.iconContainer}>
+        <Text style={styles.icon}>📍</Text>
       </View>
 
-      <View style={[styles.card, { backgroundColor: currentTheme.surface, borderColor: currentTheme.border }]}>
-        <Text style={[styles.cardTitle, { color: currentTheme.text }]}>Theme Status</Text>
-        <Text style={[styles.cardDescription, { color: currentTheme.secondaryText }]}>
-          Current active theme is {isDarkMode ? 'Dark' : 'Light'}. Toggle the button above to switch between themes.
-        </Text>
-      </View>
-    </SafeAreaView>
+      <Text style={styles.title}>Proximity</Text>
+      <Text style={styles.subtitle}>You are successfully logged in.</Text>
+
+      <TouchableOpacity style={styles.button} onPress={handleSignOut}>
+        <Text style={styles.buttonText}>Sign Out</Text>
+      </TouchableOpacity>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: theme.spacing.lg,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    backgroundColor: theme.colors.background,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: theme.spacing.xl,
+    padding: 24,
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: theme.colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  icon: {
+    fontSize: 36,
   },
   title: {
-    fontSize: theme.typography.fontSize.xxl,
-    fontWeight: theme.typography.fontWeight.bold,
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: theme.colors.text.primary,
+    marginBottom: 8,
+    textAlign: 'center',
   },
-  toggleButton: {
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.full,
-    borderWidth: 1,
+  subtitle: {
+    fontSize: 16,
+    color: theme.colors.text.secondary,
+    marginBottom: 40,
+    textAlign: 'center',
   },
-  toggleButtonText: {
-    fontSize: theme.typography.fontSize.sm,
-    fontWeight: theme.typography.fontWeight.semibold,
+  button: {
+    backgroundColor: theme.colors.primary.main,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    alignItems: 'center',
+    width: '100%',
   },
-  card: {
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-  },
-  cardTitle: {
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: theme.typography.fontWeight.semibold,
-    marginBottom: theme.spacing.sm,
-  },
-  cardDescription: {
-    fontSize: theme.typography.fontSize.md,
-    lineHeight: 22,
+  buttonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
