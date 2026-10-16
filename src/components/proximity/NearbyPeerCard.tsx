@@ -1,12 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { FormattedNearbyPeer } from '../../types';
 import { Avatar } from '../common/Avatar';
-import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
+import { DistanceBadge } from './DistanceBadge';
 import { theme } from '../../constants/theme';
-import { getPresenceColor } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -14,42 +12,26 @@ interface NearbyPeerCardProps {
 }
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
-  const presenceColor = getPresenceColor(peer.presence_status);
-
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
-          <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
-        </View>
-
-        <View style={styles.info}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+      <View style={styles.leftSection}>
+        <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
+        <View style={styles.infoContainer}>
           <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
-            <Text style={styles.age}>, {peer.age}</Text>
+            <Text style={styles.name} numberOfLines={1}>
+              {peer.full_name || peer.username}
+            </Text>
+            {peer.age ? <Text style={styles.age}>, {peer.age}</Text> : null}
           </View>
-          <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
-        </View>
-
-        <View style={styles.signals}>
-          <DistanceBadge distance={peer.formatted_distance} />
-          <SignalIndicator strength={peer.signal_strength} />
+          <Text style={styles.username} numberOfLines={1}>
+            @{peer.username}
+          </Text>
         </View>
       </View>
 
-      <View style={styles.footer}>
-        <View style={styles.statusRow}>
-          <Ionicons 
-            name={peer.is_ble_discoverable ? 'bluetooth' : 'radio'} 
-            size={14} 
-            color={theme.colors.text.secondary} 
-          />
-          <Text style={styles.statusText}>
-            {peer.presence_status === 'online' ? 'Online now' : peer.presence_status === 'recently' ? 'Active recently' : 'Offline'}
-          </Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={theme.colors.text.tertiary} />
+      <View style={styles.rightSection}>
+        <DistanceBadge distance={peer.formatted_distance} />
+        <SignalIndicator strength={peer.signal_strength} />
       </View>
     </TouchableOpacity>
   );
@@ -60,31 +42,22 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  header: {
+  leftSection: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  avatarContainer: {
-    position: 'relative',
+    flex: 1,
     marginRight: theme.spacing.md,
   },
-  presenceDot: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: theme.colors.surface,
-  },
-  info: {
+  infoContainer: {
+    marginLeft: theme.spacing.md,
     flex: 1,
-    justifyContent: 'center',
   },
   nameRow: {
     flexDirection: 'row',
@@ -94,37 +67,18 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
-    flexShrink: 1,
   },
   age: {
-    fontSize: theme.typography.fontSize.md,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
   },
   username: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.secondary,
     marginTop: 2,
   },
-  signals: {
+  rightSection: {
     alignItems: 'flex-end',
     justifyContent: 'center',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: theme.spacing.md,
-    paddingTop: theme.spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.divider,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusText: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.secondary,
-    marginLeft: theme.spacing.xs,
   },
 });
