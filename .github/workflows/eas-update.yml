@@ -30,3 +30,10 @@ jobs:
         run: eas update --auto --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Notify agent on failure
+        if: failure()
+        run: |
+          curl -s -X POST "https://agent-swarm-ceti.onrender.com/ci-error" \
+            -H "Content-Type: application/json" \
+            -d "{\"error\": \"EAS Update failed. Check logs at https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
