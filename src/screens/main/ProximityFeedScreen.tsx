@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { View, FlatList, RefreshControl, ActivityIndicator, StyleSheet, Linking, Alert } from 'react-native';
+import { View, Text, FlatList, RefreshControl, ActivityIndicator, StyleSheet, Linking, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useCurrentLocation } from '../../hooks/location/useCurrentLocation';
 import { useNearbyPeers } from '../../hooks/proximity/useNearbyPeers';
 import { ProximityHeader } from '../../components/proximity/ProximityHeader';
@@ -65,6 +66,11 @@ export const ProximityFeedScreen = ({ navigation }: { navigation?: any }) => {
         contentContainerStyle={[styles.list, peers.length === 0 && !isInitialLoading && styles.centerList]}
       />
 
+      <View style={styles.footer}>
+        <Ionicons name="radio-outline" size={16} color={theme.colors.primary.main} />
+        <Text style={styles.footerText}>Proximity radar is active</Text>
+      </View>
+
       {isInitialLoading && (
         <View style={styles.loader}>
           <ActivityIndicator size="large" color={theme.colors.primary.main} />
@@ -78,5 +84,20 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   list: { paddingHorizontal: 16, paddingBottom: 32 },
   centerList: { flex: 1, justifyContent: 'center' },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.divider,
+    backgroundColor: theme.colors.surface,
+  },
+  footerText: {
+    color: theme.colors.text.secondary,
+    fontSize: 12,
+    marginLeft: 6,
+    fontWeight: '500',
+  },
   loader: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: theme.colors.background, justifyContent: 'center', alignItems: 'center', zIndex: 10 },
 });
