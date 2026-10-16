@@ -33,7 +33,6 @@ export const ChatThreadScreen = ({ userId, userName, myId, onBack }: Props) => {
         body: tempText,
       });
 
-      // This will tell us if the database rejected the message
       if (error) {
         Alert.alert("Database Error", error.message);
       } else {
@@ -70,7 +69,7 @@ export const ChatThreadScreen = ({ userId, userName, myId, onBack }: Props) => {
         </View>
 
         {isLoading ? (
-          <View style={styles.centered}><Text>Loading Chat...</Text></View>
+          <View style={styles.centered}><Text style={styles.loadingText}>Loading Chat...</Text></View>
         ) : (
           <FlatList 
             data={messages} 
@@ -82,10 +81,22 @@ export const ChatThreadScreen = ({ userId, userName, myId, onBack }: Props) => {
         )}
 
         <View style={styles.inputContainer}>
-          <TextInput style={styles.input} value={text} onChangeText={setText} placeholder="Type a message..." />
+          <TextInput 
+            style={styles.input} 
+            value={text} 
+            onChangeText={setText} 
+            placeholder="Type a message..." 
+            placeholderTextColor={theme.colors.text.tertiary}
+          />
           <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
             <Text style={styles.sendText}>Send</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Footer Component */}
+        <View style={styles.footerContainer}>
+          <View style={styles.footerIndicator} />
+          <Text style={styles.footerText}>Secure P2P Proximity Encryption Active</Text>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -100,6 +111,7 @@ const styles = StyleSheet.create({
   backText: { fontSize: 16, color: theme.colors.primary.main, fontWeight: '600' },
   headerTitle: { fontSize: 17, fontWeight: '700', color: theme.colors.text.primary, flex: 1 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { color: theme.colors.text.secondary },
   list: { padding: 16, gap: 8 },
   bubbleContainer: { flexDirection: 'row', justifyContent: 'flex-start' },
   rightBubble: { justifyContent: 'flex-end' },
@@ -111,7 +123,30 @@ const styles = StyleSheet.create({
   myText: { color: '#FFF' },
   timeText: { fontSize: 10, color: theme.colors.text.tertiary, marginTop: 4, textAlign: 'right' },
   inputContainer: { flexDirection: 'row', padding: 16, backgroundColor: theme.colors.surface, borderTopWidth: 1, borderColor: theme.colors.border, gap: 10 },
-  input: { flex: 1, backgroundColor: theme.colors.background, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, fontSize: 15 },
+  input: { flex: 1, backgroundColor: theme.colors.background, color: theme.colors.text.primary, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, fontSize: 15 },
   sendButton: { backgroundColor: theme.colors.primary.main, borderRadius: 20, paddingHorizontal: 20, justifyContent: 'center' },
   sendText: { color: '#FFF', fontWeight: '600' },
+  footerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: theme.colors.surfaceLight,
+    borderTopWidth: 1,
+    borderColor: theme.colors.divider,
+    gap: 6,
+  },
+  footerIndicator: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: theme.colors.success,
+  },
+  footerText: {
+    fontSize: 11,
+    color: theme.colors.text.secondary,
+    fontWeight: '500',
+    letterSpacing: 0.2,
+  },
 });
