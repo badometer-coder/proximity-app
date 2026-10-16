@@ -15,6 +15,8 @@ export const colors = {
   },
   border: '#374151',
   borderLight: '#4B5563',
+  divider: '#1F2937',
+  orange: '#F97316',
   success: '#10B981',
   error: '#EF4444',
   warning: '#F59E0B',

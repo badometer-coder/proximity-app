@@ -34,7 +34,7 @@ export const ProximityFeedScreen = ({ navigation }: { navigation?: any }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ProximityHeader lastUpdated={lastFetchedAt ?? undefined} />
+      <ProximityHeader lastUpdated={lastFetchedAt ?? null} />
       
       {/* The smooth iOS-style number scroller */}
       <RadiusWheel value={selectedRadius} onValueChange={setRadius} />
