@@ -1,39 +1,55 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../config/supabase';
-import type { Session } from '@supabase/supabase-js';
+import { supabase } from '../../services/supabase';
+import { User, Session } from '@supabase/supabase-js';
 
 export const useAuth = () => {
+  const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check active session on load
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const signIn = async (email: string, pass: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password: pass,
+    });
     return { data, error };
   };
 
-  const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+  const signUp = async (email: string, pass: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password: pass,
+    });
     return { data, error };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    return { error };
   };
 
-  return { session, loading, signIn, signUp, signOut };
+  return {
+    user,
+    session,
+    loading,
+    signIn,
+    signUp,
+    signOut,
+  };
 };
