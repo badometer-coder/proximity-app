@@ -16,7 +16,7 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
   const presenceColor = getPresenceColor(peer.presence_status);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
@@ -25,18 +25,16 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 
         <View style={styles.info}>
           <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
+            <Text style={styles.name} numberOfLines={1}>{peer.full_name || peer.username}</Text>
             <Text style={styles.age}>{peer.age}</Text>
           </View>
           <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
           <Text style={styles.lastActive}>Active {formatRelativeTime(peer.last_active_at)}</Text>
         </View>
 
-        <View style={styles.rightAction}>
+        <View style={styles.metrics}>
           <DistanceBadge distance={peer.formatted_distance} />
-          <View style={styles.signalContainer}>
-            <SignalIndicator strength={peer.signal_strength} />
-          </View>
+          <SignalIndicator strength={peer.signal_strength} />
         </View>
       </View>
     </TouchableOpacity>
@@ -44,7 +42,7 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 };
 
 const styles = StyleSheet.create({
-  card: {
+  container: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
@@ -84,6 +82,7 @@ const styles = StyleSheet.create({
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
     marginRight: theme.spacing.xs,
+    flexShrink: 1,
   },
   age: {
     fontSize: theme.typography.fontSize.sm,
@@ -91,19 +90,16 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.tertiary,
+    color: theme.colors.text.secondary,
     marginBottom: 4,
   },
   lastActive: {
     fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.secondary,
+    color: theme.colors.text.tertiary,
   },
-  rightAction: {
+  metrics: {
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     height: 50,
-  },
-  signalContainer: {
-    marginTop: theme.spacing.xs,
   },
 });

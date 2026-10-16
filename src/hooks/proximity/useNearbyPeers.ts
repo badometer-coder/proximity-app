@@ -1,40 +1,40 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../config/supabase';
-import { GPSCoordinates, FormattedNearbyPeer, ApiError } from '../../types';
+import { FormattedNearbyPeer, ApiError, GPSCoordinates } from '../../types';
 import { formatDistance, getSignalStrength, getPresenceStatus } from '../../lib/utils';
 
 export const useNearbyPeers = (initialLocation: GPSCoordinates | null = null) => {
   const [peers, setPeers] = useState<FormattedNearbyPeer[]>([]);
-  const [selectedRadius, setSelectedRadius] = useState<number>(5000); // 5km default
+  const [selectedRadius, setSelectedRadius] = useState<number>(5000);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [lastFetchedAt, setLastFetchedAt] = useState<string | null>(null);
-  
-  const locationRef = useRef<GPSCoordinates | null>(initialLocation);
-  locationRef.current = initialLocation;
 
-  const fetchPeers = useCallback(async (isRefresh = false) => {
-    if (isRefresh) {
-      setIsRefreshing(true);
-    } else {
-      setIsLoading(true);
+  const fetchPeers = useCallback(async (location: GPSCoordinates | null, radius: number, isRefresh = false) => {
+    if (!location) {
+      if (isRefresh) setIsRefreshing(false);
+      else setIsLoading(false);
+      return;
     }
+
+    if (isRefresh) setIsRefreshing(true);
+    else setIsLoading(true);
     setError(null);
 
     try {
-      const currentLocation = locationRef.current;
-      
-      const rpcParams = currentLocation ? {
-        lat: currentLocation.latitude,
-        lon: currentLocation.longitude,
-        radius_meters: selectedRadius
-      } : undefined;
+      const { data, error: rpcError } = await supabase.rpc('get_nearby_peers', {
+        lat: location.latitude,
+        lon: location.longitude,
+        radius_meters: radius,
+      });
 
-      const { data, err } = await supabase.rpc('get_nearby_peers', rpcParams as any);
-
-      if (err) {
-        throw err;
+      if (rpcError) {
+        throw {
+          code: rpcError.code || 'UNKNOWN_ERROR',
+          message: rpcError.message || 'Failed to fetch nearby peers',
+          details: rpcError.details ? { details: rpcError.details } : undefined,
+        };
       }
 
       if (data) {
@@ -42,35 +42,33 @@ export const useNearbyPeers = (initialLocation: GPSCoordinates | null = null) =>
           ...peer,
           formatted_distance: formatDistance(peer.distance_meters),
           signal_strength: getSignalStrength(peer.distance_meters),
-          presence_status: getPresenceStatus(peer.last_active_at)
+          presence_status: getPresenceStatus(peer.last_active_at),
         }));
         setPeers(formatted);
-      } else {
-        setPeers([]);
+        setLastFetchedAt(new Date().toISOString());
       }
-      setLastFetchedAt(new Date().toISOString());
     } catch (err: any) {
       setError({
-        code: err?.code || 'FETCH_ERROR',
-        message: err?.message || 'Failed to fetch nearby peers',
-        details: err
+        code: err.code || 'FETCH_ERROR',
+        message: err.message || 'An unexpected error occurred',
+        details: err.details,
       });
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [selectedRadius]);
+  }, []);
 
   useEffect(() => {
-    fetchPeers();
-  }, [fetchPeers]);
+    fetchPeers(initialLocation, selectedRadius);
+  }, [initialLocation, selectedRadius, fetchPeers]);
 
-  const setRadius = (radius: number) => {
-    setSelectedRadius(radius);
+  const setRadius = (r: number) => {
+    setSelectedRadius(r);
   };
 
   const refresh = async () => {
-    await fetchPeers(true);
+    await fetchPeers(initialLocation, selectedRadius, true);
   };
 
   return {
@@ -81,6 +79,6 @@ export const useNearbyPeers = (initialLocation: GPSCoordinates | null = null) =>
     error,
     lastFetchedAt,
     setRadius,
-    refresh
+    refresh,
   };
 };
