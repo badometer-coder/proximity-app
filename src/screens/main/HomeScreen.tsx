@@ -1,96 +1,158 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, Alert } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Switch, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
-import { useAuth } from '../../hooks/auth/useAuth';
-import { useNearbyPeers } from '../../hooks/proximity/useNearbyPeers';
-import { NearbyPeerCard } from '../../components/proximity/NearbyPeerCard';
+import { openChat } from '../../../App';
 import { ProximityHeader } from '../../components/proximity/ProximityHeader';
-import { EmptyState } from '../../components/common/EmptyState';
+import { RadiusSlider } from '../../components/proximity/RadiusSlider';
+import { RadiusWheel } from '../../components/proximity/RadiusWheel';
+import { NearbyPeerCard } from '../../components/proximity/NearbyPeerCard';
+import { useNearbyPeers } from '../../hooks/proximity/useNearbyPeers';
+import { useCurrentLocation } from '../../hooks/location/useCurrentLocation';
+import { useAuth } from '../../hooks/auth/useAuth';
+import type { FormattedNearbyPeer } from '../../types';
 
-export const HomeScreen = () => {
-  const { user, signOut } = useAuth();
-  const [radius, setRadius] = useState<number>(5);
-  const { peers, loading, refetch } = useNearbyPeers(radius);
-  const [refreshing, setRefreshing] = useState(false);
+export const HomeScreen: React.FC = () => {
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+  const [useWheel, setUseWheel] = useState<boolean>(false);
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
+  const { location, error: locationError, requestPermission } = useCurrentLocation();
+  const { peers, selectedRadius, isLoading, isRefreshing, error: peersError, setRadius, refresh } = useNearbyPeers(location);
+  const { signOut } = useAuth();
+
+  const colors = isDarkMode ? {
+    bg: theme.colors.background,
+    surface: theme.colors.surface,
+    text: theme.colors.text.primary,
+    secondaryText: theme.colors.text.secondary,
+    border: theme.colors.border,
+  } : {
+    bg: '#F3F4F6',
+    surface: '#FFFFFF',
+    text: '#111827',
+    secondaryText: '#4B5563',
+    border: '#E5E7EB',
   };
+
+  const onRefresh = useCallback(async () => {
+    await Promise.all([refresh(), requestPermission()]);
+  }, [refresh, requestPermission]);
 
   const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (error) {
-      Alert.alert('Error', error.message);
-    }
+    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Sign Out',
+        style: 'destructive',
+        onPress: async () => {
+          await signOut();
+        },
+      },
+    ]);
   };
 
+  const renderPeerItem = ({ item }: { item: FormattedNearbyPeer }) => (
+    <NearbyPeerCard
+      peer={item}
+      onPress={() => {
+        if (openChat) openChat(item.id, item.full_name || 'Chat');
+      }}
+    />
+  );
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <ProximityHeader radius={radius} onRadiusChange={setRadius} />
-        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
+      {/* Top header with title and sign out */}
+      <View style={[styles.topBar, { borderBottomColor: colors.border }]}>
+        <Text style={[styles.appTitle, { color: colors.text }]}>Proximity</Text>
+        <TouchableOpacity onPress={handleSignOut} style={styles.signOutBtn}>
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing || loading} onRefresh={handleRefresh} tintColor={theme.colors.primary.main} />}
-      >
-        <Text style={styles.sectionTitle}>Nearby People ({peers.length})</Text>
+      <ProximityHeader
+        lastUpdated={null}
+      />
 
-        {peers.length === 0 && !loading ? (
-          <EmptyState 
-            title="No one nearby" 
-            message="Try increasing your radius filter to find more peers around you." 
-          />
+      <View style={[styles.filterContainer, { borderBottomColor: colors.border }]}>
+        <View style={styles.radiusSelectorToggle}>
+          <TouchableOpacity
+            style={[styles.toggleBtn, !useWheel && styles.toggleBtnActive]}
+            onPress={() => setUseWheel(false)}
+          >
+            <Text style={[styles.toggleBtnText, !useWheel && styles.toggleBtnTextActive]}>Slider</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.toggleBtn, useWheel && styles.toggleBtnActive]}
+            onPress={() => setUseWheel(true)}
+          >
+            <Text style={[styles.toggleBtnText, useWheel && styles.toggleBtnTextActive]}>Wheel</Text>
+          </TouchableOpacity>
+        </View>
+
+        {useWheel ? (
+          <RadiusWheel value={selectedRadius} onValueChange={setRadius} />
         ) : (
-          peers.map(peer => (
-            <NearbyPeerCard key={peer.id} peer={peer} />
-          ))
+          <RadiusSlider value={selectedRadius} onValueChange={setRadius} />
         )}
-      </ScrollView>
-    </View>
+      </View>
+
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Nearby Peers</Text>
+        <View style={styles.themeToggle}>
+          <Text style={[styles.themeLabel, { color: colors.secondaryText }]}>
+            {isDarkMode ? '🌙' : '☀️'}
+          </Text>
+          <Switch
+            value={isDarkMode}
+            onValueChange={setIsDarkMode}
+            trackColor={{ false: '#E5E7EB', true: theme.colors.primary.main }}
+            thumbColor="#FFFFFF"
+          />
+        </View>
+      </View>
+
+      {isLoading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={theme.colors.primary.main} />
+        </View>
+      ) : (
+        <FlatList
+          data={peers}
+          keyExtractor={(item) => item.id}
+          renderItem={renderPeerItem}
+          contentContainerStyle={styles.list}
+          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={theme.colors.primary.main} />}
+          ListEmptyComponent={
+            <View style={styles.centered}>
+              <Text style={[styles.emptyText, { color: colors.secondaryText }]}>
+                {locationError || peersError?.message || 'No users found nearby within this radius.'}
+              </Text>
+            </View>
+          }
+        />
+      )}
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.divider,
-  },
-  signOutButton: {
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.sm,
-    backgroundColor: theme.colors.surfaceLight,
-    borderRadius: theme.borderRadius.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  signOutText: {
-    color: theme.colors.text.secondary,
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: theme.typography.fontWeight.semibold,
-  },
-  scrollContent: {
-    padding: theme.spacing.md,
-  },
-  sectionTitle: {
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: theme.typography.fontWeight.bold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.md,
-  },
+  container: { flex: 1 },
+  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1 },
+  appTitle: { fontSize: 20, fontWeight: '700' },
+  signOutBtn: { paddingVertical: 6, paddingHorizontal: 12 },
+  signOutText: { color: '#EF4444', fontSize: 14, fontWeight: '600' },
+  filterContainer: { padding: 12, borderBottomWidth: 1 },
+  radiusSelectorToggle: { flexDirection: 'row', justifyContent: 'center', marginBottom: 8, gap: 8 },
+  toggleBtn: { paddingVertical: 4, paddingHorizontal: 12, borderRadius: 16, backgroundColor: theme.colors.surfaceLight },
+  toggleBtnActive: { backgroundColor: theme.colors.primary.main },
+  toggleBtnText: { color: theme.colors.text.secondary, fontSize: 12, fontWeight: '600' },
+  toggleBtnTextActive: { color: '#FFFFFF' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1 },
+  headerTitle: { fontSize: 18, fontWeight: '700' },
+  themeToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  themeLabel: { fontSize: 18 },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
+  list: { padding: 16, gap: 12 },
+  emptyText: { fontSize: 16, textAlign: 'center' },
 });
