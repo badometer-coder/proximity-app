@@ -1,21 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../config/supabase';
-import { GPSCoordinates, FormattedNearbyPeer, ApiError } from '../../types';
+import { FormattedNearbyPeer, ApiError, GPSCoordinates } from '../../types';
 import { useAuth } from '../auth/useAuth';
 import { formatDistance, getSignalStrength, getPresenceStatus } from '../../lib/utils';
 
 export const useNearbyPeers = (location: GPSCoordinates | null) => {
   const { user } = useAuth();
   const [peers, setPeers] = useState<FormattedNearbyPeer[]>([]);
-  const [selectedRadius, setSelectedRadius] = useState<number>(5000); // 5km default
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [selectedRadius, setRadius] = useState<number>(5000);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [lastFetchedAt, setLastFetchedAt] = useState<string | null>(null);
 
   const fetchPeers = useCallback(async (isRefresh = false) => {
-    if (!user || !location) {
-      setPeers([]);
+    if (!user) {
+      setIsLoading(false);
       return;
     }
 
@@ -24,30 +24,31 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
     } else {
       setIsLoading(true);
     }
+
     setError(null);
 
     try {
+      const lat = location?.latitude ?? 0;
+      const lon = location?.longitude ?? 0;
+
       const { data, error: rpcError } = await supabase.rpc('get_nearby_peers', {
         user_id: user.id,
         radius_meters: selectedRadius,
-        lat: location.latitude,
-        lon: location.longitude,
+        lat,
+        lon,
       });
 
       if (rpcError) {
-        throw rpcError;
+        throw {
+          code: rpcError.code || 'UNKNOWN_ERROR',
+          message: rpcError.message,
+          details: rpcError.details ? { details: rpcError.details } : undefined,
+        };
       }
 
       if (data) {
         const formatted: FormattedNearbyPeer[] = (data as any[]).map((peer) => ({
-          id: peer.id,
-          username: peer.username,
-          full_name: peer.full_name,
-          age: peer.age,
-          avatar_url: peer.avatar_url,
-          is_ble_discoverable: peer.is_ble_discoverable ?? true,
-          distance_meters: peer.distance_meters,
-          last_active_at: peer.last_active_at,
+          ...peer,
           formatted_distance: formatDistance(peer.distance_meters),
           signal_strength: getSignalStrength(peer.distance_meters),
           presence_status: getPresenceStatus(peer.last_active_at),
@@ -59,7 +60,7 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
       setLastFetchedAt(new Date().toISOString());
     } catch (err: any) {
       setError({
-        code: err.code || 'UNKNOWN_ERROR',
+        code: err.code || 'FETCH_FAILED',
         message: err.message || 'Failed to fetch nearby peers',
         details: err.details,
       });
@@ -72,10 +73,6 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
   useEffect(() => {
     fetchPeers();
   }, [fetchPeers]);
-
-  const setRadius = (r: number) => {
-    setSelectedRadius(r);
-  };
 
   const refresh = async () => {
     await fetchPeers(true);
