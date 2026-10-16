@@ -1,40 +1,58 @@
-import { StyleSheet } from 'react-native';
-
-export const COLORS = {
-  background: '#F9FAFB',
-  surface: '#FFFFFF',
+export const colors = {
+  background: '#000000',
+  surface: '#111111',
+  surfaceLight: '#1A1A1A',
   primary: '#6366F1',
+  primaryDark: '#4F46E5',
+  primaryLight: '#818CF8',
   text: {
-    primary: '#111827',
-    secondary: '#4B5563',
-    hint: '#FFFFFF',
+    primary: '#F9FAFB',
+    secondary: '#9CA3AF',
+    tertiary: '#6B7280',
+    inverse: '#111827',
   },
-  border: '#E5E7EB',
-  error: '#EF4444',
+  border: '#374151',
+  borderLight: '#4B5563',
   success: '#10B981',
-};
+  error: '#EF4444',
+  warning: '#F59E0B',
+  info: '#3B82F6',
+  overlay: 'rgba(0, 0, 0, 0.7)',
+} as const;
 
-export const SPACING = {
+export const spacing = {
   xs: 4,
   sm: 8,
   md: 16,
   lg: 24,
   xl: 32,
-};
+  xxl: 48,
+} as const;
 
-export const COMMON_STYLES = StyleSheet.create({
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 8,
-    paddingHorizontal: SPACING.md,
-    color: COLORS.text.primary,
-    backgroundColor: COLORS.surface,
+export const borderRadius = {
+  sm: 4,
+  md: 8,
+  lg: 16,
+  xl: 24,
+  full: 9999,
+} as const;
+
+export const typography = {
+  fontSize: {
+    xs: 12, sm: 14, md: 16, lg: 18, xl: 20, xxl: 24, xxxl: 32,
   },
-  hint: {
-    color: COLORS.text.hint,
-    fontSize: 12,
-    marginTop: SPACING.xs,
+  fontWeight: {
+    regular: '400' as const,
+    medium: '500' as const,
+    semibold: '600' as const,
+    bold: '700' as const,
   },
-});
+} as const;
+
+// Named export so screens can do: import { theme } from '../../constants/theme'
+export const theme = {
+  colors,
+  spacing,
+  borderRadius,
+  typography,
+} as const;
