@@ -2,10 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../config/supabase';
 import { useAuth } from '../auth/useAuth';
 import { 
+  GPSCoordinates, 
   FormattedNearbyPeer, 
-  NearbyPeer, 
   ApiError, 
-  GPSCoordinates 
+  NearbyPeer 
 } from '../../types';
 import { 
   formatDistance, 
@@ -16,7 +16,7 @@ import {
 export const useNearbyPeers = (location: GPSCoordinates | null) => {
   const { user } = useAuth();
   const [peers, setPeers] = useState<FormattedNearbyPeer[]>([]);
-  const [selectedRadius, setSelectedRadius] = useState<number>(5000); // 5km default
+  const [selectedRadius, setRadius] = useState<number>(5000);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<ApiError | null>(null);
@@ -45,14 +45,10 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
       });
 
       if (rpcError) {
-        throw {
-          code: rpcError.code || 'UNKNOWN_ERROR',
-          message: rpcError.message,
-          details: rpcError.details ? { details: rpcError.details } : undefined,
-        } as ApiError;
+        throw { code: rpcError.code || 'RPC_ERROR', message: rpcError.message };
       }
 
-      const rawPeers: NearbyPeer[] = data || [];
+      const rawPeers: NearbyPeer[] = (data || []) as NearbyPeer[];
 
       const formatted: FormattedNearbyPeer[] = rawPeers.map((peer) => ({
         ...peer,
@@ -65,9 +61,8 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
       setLastFetchedAt(new Date().toISOString());
     } catch (err: any) {
       setError({
-        code: err.code || 'FETCH_FAILED',
+        code: err.code || 'UNKNOWN_ERROR',
         message: err.message || 'Failed to fetch nearby peers',
-        details: err.details,
       });
     } finally {
       setIsLoading(false);
@@ -78,10 +73,6 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
   useEffect(() => {
     fetchPeers();
   }, [fetchPeers]);
-
-  const setRadius = (radius: number) => {
-    setSelectedRadius(radius);
-  };
 
   const refresh = async () => {
     await fetchPeers(true);
