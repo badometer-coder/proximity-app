@@ -23,19 +23,17 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
           <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
         </View>
 
-        <View style={styles.info}>
+        <View style={styles.infoContainer}>
           <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
-            <Text style={styles.age}>, {peer.age}</Text>
+            <Text style={styles.name} numberOfLines={1}>
+              {peer.full_name} <Text style={styles.age}>({peer.age})</Text>
+            </Text>
+            <DistanceBadge distance={peer.formatted_distance} />
           </View>
           <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
-          <Text style={styles.lastActive}>Active {formatRelativeTime(peer.last_active_at)}</Text>
-        </View>
-
-        <View style={styles.rightSection}>
-          <DistanceBadge distance={peer.formatted_distance} />
-          <View style={styles.signalContainer}>
+          <View style={styles.metaRow}>
             <SignalIndicator strength={peer.signal_strength} />
+            <Text style={styles.lastActive}>Active {formatRelativeTime(peer.last_active_at)}</Text>
           </View>
         </View>
       </View>
@@ -46,9 +44,9 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -58,51 +56,50 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     position: 'relative',
-    marginRight: 12,
+    marginRight: theme.spacing.md,
   },
   presenceDot: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
+    bottom: 2,
+    right: 2,
     width: 12,
     height: 12,
     borderRadius: 6,
     borderWidth: 2,
     borderColor: theme.colors.surface,
   },
-  info: {
+  infoContainer: {
     flex: 1,
-    justifyContent: 'center',
   },
   nameRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 2,
   },
   name: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
+    flex: 1,
+    marginRight: theme.spacing.xs,
   },
   age: {
-    fontSize: 16,
+    fontWeight: theme.typography.fontWeight.regular,
     color: theme.colors.text.secondary,
   },
   username: {
-    fontSize: 13,
-    color: theme.colors.primary.light,
-    marginTop: 2,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.xs,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   lastActive: {
-    fontSize: 11,
+    fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.tertiary,
-    marginTop: 4,
-  },
-  rightSection: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    marginLeft: 8,
-  },
-  signalContainer: {
-    marginTop: 6,
   },
 });
