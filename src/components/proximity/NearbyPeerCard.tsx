@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { FormattedNearbyPeer } from '../../types';
-import { theme } from '../../constants/theme';
 import { Avatar } from '../common/Avatar';
-import { SignalIndicator } from './SignalIndicator';
 import { DistanceBadge } from './DistanceBadge';
+import { SignalIndicator } from './SignalIndicator';
+import { theme } from '../../constants/theme';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -13,35 +13,36 @@ interface NearbyPeerCardProps {
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
-        <Avatar url={peer.avatarUrl} name={peer.name} size={48} />
+        <Avatar uri={peer.avatar_url} name={peer.full_name} size={50} />
         <View style={styles.info}>
-          <Text style={styles.name}>{peer.name}</Text>
-          <Text style={styles.username}>@{peer.username}</Text>
-          {peer.bio ? <Text style={styles.bio} numberOfLines={1}>{peer.bio}</Text> : null}
+          <Text style={styles.name}>{peer.full_name}</Text>
+          <Text style={styles.bio} numberOfLines={1}>{peer.status || peer.bio}</Text>
         </View>
-        <SignalIndicator strength={peer.signalStrength} />
+        <SignalIndicator rssi={peer.rssi} />
       </View>
       <View style={styles.footer}>
-        <DistanceBadge distanceFormatted={peer.distanceFormatted} />
+        <DistanceBadge distanceMeters={peer.distanceMeters} />
+        <Text style={styles.timestamp}>Last seen {peer.lastSeenFormatted}</Text>
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
+  container: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    marginBottom: theme.spacing.md,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: theme.spacing.sm,
   },
   info: {
     flex: 1,
@@ -51,22 +52,23 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
+    marginBottom: 2,
   },
-  username: {
+  bio: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
   },
-  bio: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.tertiary,
-    marginTop: 2,
-  },
   footer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: theme.spacing.sm,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: theme.spacing.xs,
+    paddingTop: theme.spacing.xs,
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
-    paddingTop: theme.spacing.sm,
+  },
+  timestamp: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.text.tertiary,
   },
 });
