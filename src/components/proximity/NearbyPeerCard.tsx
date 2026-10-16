@@ -5,7 +5,6 @@ import { Avatar } from '../common/Avatar';
 import { SignalIndicator } from './SignalIndicator';
 import { DistanceBadge } from './DistanceBadge';
 import { theme } from '../../constants/theme';
-import { getPresenceColor, formatRelativeTime } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -13,28 +12,38 @@ interface NearbyPeerCardProps {
 }
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
-  const presenceColor = getPresenceColor(peer.presence_status);
-
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
-          <View style={[styles.presenceIndicator, { backgroundColor: presenceColor }]} />
-        </View>
-
+        <Avatar uri={peer.avatar_url} name={peer.full_name} size={50} />
         <View style={styles.info}>
           <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
-            <Text style={styles.age}>{peer.age}</Text>
+            <Text style={styles.name}>{peer.full_name}</Text>
+            <Text style={styles.age}>, {peer.age}</Text>
           </View>
-          <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
-          <Text style={styles.lastActive}>Active {formatRelativeTime(peer.last_active_at)}</Text>
+          <Text style={styles.username}>@{peer.username}</Text>
         </View>
+        <SignalIndicator strength={peer.signal_strength} />
+      </View>
 
-        <View style={styles.metaContainer}>
-          <DistanceBadge distance={peer.formatted_distance} />
-          <SignalIndicator strength={peer.signal_strength} />
+      <View style={styles.footer}>
+        <DistanceBadge distance={peer.formatted_distance} />
+        <View style={styles.presenceContainer}>
+          <View 
+            style={[
+              styles.presenceDot, 
+              { 
+                backgroundColor: 
+                  peer.presence_status === 'online' ? theme.colors.success :
+                  peer.presence_status === 'recently' ? theme.colors.warning : 
+                  theme.colors.border 
+              }
+            ]} 
+          />
+          <Text style={styles.presenceText}>
+            {peer.presence_status === 'online' ? 'Online now' : 
+             peer.presence_status === 'recently' ? 'Active recently' : 'Offline'}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -46,7 +55,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -54,52 +63,49 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  avatarContainer: {
-    position: 'relative',
-    marginRight: theme.spacing.md,
-  },
-  presenceIndicator: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 2,
-    borderColor: theme.colors.surface,
-  },
   info: {
     flex: 1,
-    justifyContent: 'center',
+    marginLeft: theme.spacing.md,
   },
   nameRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
+    alignItems: 'baseline',
   },
   name: {
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
-    marginRight: theme.spacing.xs,
-    flexShrink: 1,
   },
   age: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
   },
   username: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text.secondary,
+    marginTop: 2,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.divider,
+  },
+  presenceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  presenceDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  presenceText: {
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.secondary,
-    marginBottom: 4,
-  },
-  lastActive: {
-    fontSize: 11,
-    color: theme.colors.text.tertiary,
-  },
-  metaContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    marginLeft: theme.spacing.sm,
   },
 });
