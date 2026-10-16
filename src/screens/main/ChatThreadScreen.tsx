@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { theme } from '../../constants/theme';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
 import { ChatMessage } from '../../types';
-import { theme } from '../../constants/theme';
-import { Ionicons } from '@expo/vector-icons';
 
 interface ChatThreadScreenProps {
   userId: string;
@@ -45,9 +45,8 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
             const isMe = item.sender_id === myId;
             return (
               <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
-                <Text style={[styles.messageText, isMe ? styles.myMessageText : styles.theirMessageText]}>
-                  {item.message}
-                </Text>
+                <Text style={styles.messageText}>{item.message}</Text>
+                <Text style={styles.timestamp}>{new Date(item.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
               </View>
             );
           }}
@@ -71,25 +70,41 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 16,
+    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
-    paddingTop: 48,
   },
-  backButton: { marginRight: 16 },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: theme.colors.text.primary },
-  messageList: { padding: 16 },
+  backButton: {
+    marginRight: 16,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: theme.colors.text.primary,
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  messageList: {
+    padding: 16,
+  },
   messageBubble: {
+    maxWidth: '80%',
     padding: 12,
     borderRadius: 12,
     marginBottom: 8,
-    maxWidth: '75%',
   },
   myMessage: {
     backgroundColor: theme.colors.primary.main,
@@ -101,15 +116,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  messageText: { fontSize: 15 },
-  myMessageText: { color: '#FFFFFF' },
-  theirMessageText: { color: theme.colors.text.primary },
+  messageText: {
+    color: theme.colors.text.primary,
+    fontSize: 15,
+  },
+  timestamp: {
+    color: theme.colors.text.secondary,
+    fontSize: 10,
+    marginTop: 4,
+    textAlign: 'right',
+  },
   inputContainer: {
     flexDirection: 'row',
     padding: 12,
+    backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
     alignItems: 'center',
   },
   input: {
@@ -121,8 +143,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     color: theme.colors.text.primary,
-    fontSize: 15,
-    marginRight: 8,
+    fontSize: 14,
+    maxHeight: 100,
   },
   sendButton: {
     backgroundColor: theme.colors.primary.main,
@@ -131,5 +153,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
+    marginLeft: 8,
   },
 });
