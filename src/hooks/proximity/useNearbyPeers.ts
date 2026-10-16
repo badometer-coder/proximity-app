@@ -25,7 +25,6 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
     } else {
       setIsLoading(true);
     }
-
     setError(null);
 
     try {
@@ -40,21 +39,22 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
         throw rpcError;
       }
 
-      if (data) {
-        const formatted: FormattedNearbyPeer[] = (data as NearbyPeer[]).map((peer) => ({
-          ...peer,
-          formatted_distance: formatDistance(peer.distance_meters),
-          signal_strength: getSignalStrength(peer.distance_meters),
-          presence_status: getPresenceStatus(peer.last_active_at),
-        }));
-        setPeers(formatted);
-        setLastFetchedAt(new Date().toISOString());
-      }
+      const rawPeers: NearbyPeer[] = (data || []) as NearbyPeer[];
+      
+      const formatted: FormattedNearbyPeer[] = rawPeers.map((peer) => ({
+        ...peer,
+        formatted_distance: formatDistance(peer.distance_meters),
+        signal_strength: getSignalStrength(peer.distance_meters),
+        presence_status: getPresenceStatus(peer.last_active_at),
+      }));
+
+      setPeers(formatted);
+      setLastFetchedAt(new Date().toISOString());
     } catch (err: any) {
       setError({
-        code: err.code || 'UNKNOWN_ERROR',
-        message: err.message || 'Failed to fetch nearby peers',
-        details: err.details,
+        code: err?.code || 'FETCH_ERROR',
+        message: err?.message || 'Failed to fetch nearby peers',
+        details: err,
       });
     } finally {
       setIsLoading(false);
@@ -65,6 +65,10 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
   useEffect(() => {
     fetchPeers();
   }, [fetchPeers]);
+
+  const setRadius = (radius: number) => {
+    setSelectedRadius(radius);
+  };
 
   const refresh = async () => {
     await fetchPeers(true);
@@ -77,7 +81,7 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
     isRefreshing,
     error,
     lastFetchedAt,
-    setRadius: setSelectedRadius,
+    setRadius,
     refresh,
   };
 };
