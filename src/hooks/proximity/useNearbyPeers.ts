@@ -5,7 +5,7 @@ import { formatDistance, getSignalStrength, getPresenceStatus } from '../../lib/
 
 export const useNearbyPeers = (location: GPSCoordinates | null) => {
   const [peers, setPeers] = useState<FormattedNearbyPeer[]>([]);
-  const [selectedRadius, setSelectedRadius] = useState<number>(50); // meters
+  const [selectedRadius, setSelectedRadius] = useState<number>(5000); // 5km default
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<ApiError | null>(null);
@@ -25,42 +25,47 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
         .select('*');
 
       if (fetchError) {
-        throw { code: fetchError.code || 'UNKNOWN', message: fetchError.message } as ApiError;
+        setError({
+          code: fetchError.code || 'UNKNOWN_ERROR',
+          message: fetchError.message,
+          details: fetchError.details ? { details: fetchError.details } : undefined,
+        });
+        setPeers([]);
+      } else if (data) {
+        const formatted: FormattedNearbyPeer[] = (data as any[]).map((p) => {
+          const distance_meters = p.distance_meters ?? 150;
+          return {
+            id: p.id,
+            username: p.username || '',
+            full_name: p.full_name || '',
+            age: p.age || 18,
+            avatar_url: p.avatar_url || null,
+            is_ble_discoverable: p.is_ble_discoverable ?? true,
+            distance_meters,
+            last_active_at: p.last_active_at || new Date().toISOString(),
+            formatted_distance: formatDistance(distance_meters),
+            signal_strength: getSignalStrength(distance_meters),
+            presence_status: getPresenceStatus(p.last_active_at),
+          };
+        });
+        setPeers(formatted);
+        setLastFetchedAt(new Date().toISOString());
       }
-
-      const formatted: FormattedNearbyPeer[] = (data || []).map((peer: any) => {
-        const distance_meters = peer.distance_meters ?? Math.floor(Math.random() * selectedRadius);
-        return {
-          id: peer.id,
-          username: peer.username,
-          full_name: peer.full_name,
-          age: peer.age,
-          avatar_url: peer.avatar_url,
-          is_ble_discoverable: peer.is_ble_discoverable ?? true,
-          distance_meters,
-          last_active_at: peer.last_active_at || new Date().toISOString(),
-          formatted_distance: formatDistance(distance_meters),
-          signal_strength: getSignalStrength(distance_meters),
-          presence_status: getPresenceStatus(peer.last_active_at),
-        };
-      });
-
-      setPeers(formatted);
-      setLastFetchedAt(new Date().toLocaleTimeString());
     } catch (err: any) {
       setError({
-        code: err.code || 'FETCH_ERROR',
-        message: err.message || 'Failed to fetch nearby peers',
+        code: 'EXCEPTION',
+        message: err?.message || 'Failed to fetch nearby peers',
       });
+      setPeers([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [selectedRadius]);
+  }, []);
 
   useEffect(() => {
     fetchPeers();
-  }, [fetchPeers, location, selectedRadius]);
+  }, [location, selectedRadius, fetchPeers]);
 
   const refresh = async () => {
     await fetchPeers(true);
