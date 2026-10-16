@@ -10,9 +10,9 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../constants/theme';
-import { useChatMessages } from '../../hooks/messaging/useChatMessages';
 import { ChatMessage } from '../../types';
+import { useChatMessages } from '../../hooks/messaging/useChatMessages';
+import { theme } from '../../constants/theme';
 import { formatTime } from '../../lib/utils';
 
 interface ChatThreadScreenProps {
@@ -38,25 +38,25 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
     await sendMessage(textToSend);
   };
 
-  const renderMessage = ({ item }: { item: ChatMessage }) => {
+  const renderItem = ({ item }: { item: ChatMessage }) => {
     const isMe = item.sender_id === myId;
     return (
       <View
         style={[
           styles.messageRow,
-          isMe ? styles.myMessageRow : styles.theirMessageRow,
+          isMe ? styles.messageRowMe : styles.messageRowOther,
         ]}
       >
         <View
           style={[
             styles.messageBubble,
-            isMe ? styles.myBubble : styles.theirBubble,
+            isMe ? styles.bubbleMe : styles.bubbleOther,
           ]}
         >
-          <Text style={[styles.messageText, isMe ? styles.myText : styles.theirText]}>
+          <Text style={[styles.messageText, isMe ? styles.textMe : styles.textOther]}>
             {item.message}
           </Text>
-          <Text style={[styles.timeText, isMe ? styles.myTimeText : styles.theirTimeText]}>
+          <Text style={[styles.timestampText, isMe ? styles.timestampMe : styles.timestampOther]}>
             {formatTime(item.sent_at)}
           </Text>
         </View>
@@ -75,14 +75,13 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
           <Ionicons name="arrow-back" size={24} color={theme.colors.text.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{userName}</Text>
-        <View style={styles.headerRight} />
       </View>
 
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id}
-        renderItem={renderMessage}
-        contentContainerStyle={styles.messageList}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContent}
         inverted={false}
       />
 
@@ -90,7 +89,7 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
         <TextInput
           style={styles.input}
           placeholder="Type a message..."
-          placeholderTextColor={theme.colors.text.tertiary}
+          placeholderTextColor={theme.colors.text.secondary}
           value={inputText}
           onChangeText={setInputText}
           multiline
@@ -115,7 +114,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -123,17 +121,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
   },
   backButton: {
-    padding: 4,
+    marginRight: 12,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: theme.colors.text.primary,
   },
-  headerRight: {
-    width: 32,
-  },
-  messageList: {
+  listContent: {
     padding: 16,
     flexGrow: 1,
     justifyContent: 'flex-end',
@@ -142,10 +137,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     flexDirection: 'row',
   },
-  myMessageRow: {
+  messageRowMe: {
     justifyContent: 'flex-end',
   },
-  theirMessageRow: {
+  messageRowOther: {
     justifyContent: 'flex-start',
   },
   messageBubble: {
@@ -153,42 +148,44 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 16,
   },
-  myBubble: {
+  bubbleMe: {
     backgroundColor: theme.colors.primary.main,
     borderBottomRightRadius: 4,
   },
-  theirBubble: {
-    backgroundColor: theme.colors.surfaceLight,
+  bubbleOther: {
+    backgroundColor: theme.colors.surface,
     borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   messageText: {
     fontSize: 15,
     lineHeight: 20,
   },
-  myText: {
+  textMe: {
     color: '#FFFFFF',
   },
-  theirText: {
+  textOther: {
     color: theme.colors.text.primary,
   },
-  timeText: {
+  timestampText: {
     fontSize: 10,
     marginTop: 4,
     alignSelf: 'flex-end',
   },
-  myTimeText: {
+  timestampMe: {
     color: 'rgba(255, 255, 255, 0.7)',
   },
-  theirTimeText: {
-    color: theme.colors.text.tertiary,
+  timestampOther: {
+    color: theme.colors.text.secondary,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
+    backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
   },
   input: {
     flex: 1,
@@ -205,9 +202,9 @@ const styles = StyleSheet.create({
   sendButton: {
     marginLeft: 8,
     backgroundColor: theme.colors.primary.main,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     justifyContent: 'center',
     alignItems: 'center',
   },
