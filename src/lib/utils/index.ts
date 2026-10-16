@@ -44,7 +44,7 @@ export const getPresenceColor = (status: UserPresenceStatus): string => {
 
 export const formatRelativeTime = (timestamp: string): string => {
   const diffSeconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
-  if (diffSeconds < 60) return 'Just now';
+  if (diffSeconds < 60) return 'just now';
   const diffMinutes = Math.floor(diffSeconds / 60);
   if (diffMinutes < 60) return `${diffMinutes}m ago`;
   const diffHours = Math.floor(diffMinutes / 60);
@@ -53,7 +53,7 @@ export const formatRelativeTime = (timestamp: string): string => {
 };
 
 export const getInitials = (name: string): string => {
-  if (!name) return '??';
+  if (!name) return '';
   const parts = name.trim().split(' ');
   if (parts.length >= 2) {
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
@@ -62,6 +62,10 @@ export const getInitials = (name: string): string => {
 };
 
 export const formatTime = (isoString: string): string => {
-  const date = new Date(isoString);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  try {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
 };
