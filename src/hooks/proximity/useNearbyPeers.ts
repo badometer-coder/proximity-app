@@ -1,17 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../config/supabase';
 import { useAuth } from '../auth/useAuth';
-import { 
-  formatDistance, 
-  getSignalStrength, 
-  getPresenceStatus 
-} from '../../lib/utils';
-import { 
-  GPSCoordinates, 
-  FormattedNearbyPeer, 
-  ApiError, 
-  NearbyPeer 
-} from '../../types';
+import { GPSCoordinates, FormattedNearbyPeer, NearbyPeer, ApiError } from '../../types';
+import { formatDistance, getSignalStrength, getPresenceStatus } from '../../lib/utils';
 
 export const useNearbyPeers = (location: GPSCoordinates | null) => {
   const { user } = useAuth();
@@ -45,10 +36,11 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
       });
 
       if (rpcError) {
-        throw rpcError;
+        throw { code: rpcError.code || 'RPC_ERROR', message: rpcError.message };
       }
 
       const rawPeers: NearbyPeer[] = (data as NearbyPeer[]) || [];
+      
       const formatted: FormattedNearbyPeer[] = rawPeers.map((peer) => ({
         ...peer,
         formatted_distance: formatDistance(peer.distance_meters),
@@ -60,9 +52,8 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
       setLastFetchedAt(new Date().toISOString());
     } catch (err: any) {
       setError({
-        code: err?.code || 'FETCH_ERROR',
-        message: err?.message || 'Failed to fetch nearby peers',
-        details: err?.details ? { details: err.details } : undefined,
+        code: err.code || 'UNKNOWN_ERROR',
+        message: err.message || 'Failed to fetch nearby peers',
       });
     } finally {
       setIsLoading(false);
