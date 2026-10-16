@@ -1,33 +1,21 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../config/supabase';
+import { FormattedNearbyPeer, ApiError, GPSCoordinates } from '../../types';
+import { formatDistance, getSignalStrength, getPresenceStatus } from '../../lib/utils';
 import { useAuth } from '../auth/useAuth';
-import { 
-  FormattedNearbyPeer, 
-  NearbyPeer, 
-  ApiError, 
-  GPSCoordinates, 
-  SignalStrength, 
-  UserPresenceStatus 
-} from '../../types';
-import { 
-  formatDistance, 
-  getSignalStrength, 
-  getPresenceStatus 
-} from '../../lib/utils';
 
 export const useNearbyPeers = (location: GPSCoordinates | null) => {
   const { user } = useAuth();
   const [peers, setPeers] = useState<FormattedNearbyPeer[]>([]);
-  const [selectedRadius, setRadius] = useState<number>(5000);
+  const [selectedRadius, setSelectedRadius] = useState<number>(500); // meters
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [lastFetchedAt, setLastFetchedAt] = useState<string | null>(null);
 
   const fetchPeers = useCallback(async (isRefresh = false) => {
-    if (!user || !location) {
+    if (!user) {
       setIsLoading(false);
-      setIsRefreshing(false);
       return;
     }
 
@@ -39,40 +27,39 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
     setError(null);
 
     try {
-      const { data, error: rpcError } = await supabase.rpc('get_nearby_peers', {
+      const lat = location?.latitude ?? 0;
+      const lon = location?.longitude ?? 0;
+
+      const { data, error: supabaseError } = await supabase.rpc('get_nearby_peers', {
         user_id: user.id,
         radius_meters: selectedRadius,
-        lat: location.latitude,
-        lon: location.longitude,
+        lat,
+        lon,
       });
 
-      if (rpcError) {
-        throw rpcError;
-      }
-
-      const rawPeers: NearbyPeer[] = (data || []) as NearbyPeer[];
-      
-      const formatted: FormattedNearbyPeer[] = rawPeers.map((peer) => {
-        const signal_strength: SignalStrength = getSignalStrength(peer.distance_meters);
-        const presence_status: UserPresenceStatus = getPresenceStatus(peer.last_active_at);
-        const formatted_distance = formatDistance(peer.distance_meters);
-
-        return {
+      if (supabaseError) {
+        setError({
+          code: supabaseError.code || 'UNKNOWN_ERROR',
+          message: supabaseError.message,
+          details: supabaseError.details ? { details: supabaseError.details } : undefined,
+        });
+        setPeers([]);
+      } else if (data) {
+        const formatted: FormattedNearbyPeer[] = (data as any[]).map((peer) => ({
           ...peer,
-          formatted_distance,
-          signal_strength,
-          presence_status,
-        };
-      });
-
-      setPeers(formatted);
-      setLastFetchedAt(new Date().toISOString());
+          formatted_distance: formatDistance(peer.distance_meters),
+          signal_strength: getSignalStrength(peer.distance_meters),
+          presence_status: getPresenceStatus(peer.last_active_at),
+        }));
+        setPeers(formatted);
+        setLastFetchedAt(new Date().toISOString());
+      }
     } catch (err: any) {
       setError({
-        code: err.code || 'FETCH_ERROR',
-        message: err.message || 'Failed to fetch nearby peers',
-        details: err.details ? { details: err.details } : undefined,
+        code: 'FETCH_FAILED',
+        message: err?.message || 'Failed to fetch nearby peers',
       });
+      setPeers([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -82,6 +69,10 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
   useEffect(() => {
     fetchPeers();
   }, [fetchPeers]);
+
+  const setRadius = (radius: number) => {
+    setSelectedRadius(radius);
+  };
 
   const refresh = async () => {
     await fetchPeers(true);
