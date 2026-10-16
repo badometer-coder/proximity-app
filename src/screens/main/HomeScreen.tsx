@@ -20,7 +20,7 @@ export const HomeScreen: React.FC = () => {
   const [radius, setRadius] = useState<number>(5);
   const [useWheel, setUseWheel] = useState<boolean>(false);
 
-  const { location, errorMsg, refreshLocation } = useCurrentLocation();
+  const { location, error: errorMsg, requestPermission: refreshLocation } = useCurrentLocation();
   const { peers, loading: peersLoading, refetch: refetchPeers } = useNearbyPeers({
     radiusKm: radius,
     userLocation: location ? { latitude: location.coords.latitude, longitude: location.coords.longitude } : null,
