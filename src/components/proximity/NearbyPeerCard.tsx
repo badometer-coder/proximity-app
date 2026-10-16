@@ -5,6 +5,7 @@ import { Avatar } from '../common/Avatar';
 import { SignalIndicator } from './SignalIndicator';
 import { DistanceBadge } from './DistanceBadge';
 import { theme } from '../../constants/theme';
+import { getPresenceColor, getPresenceStatus } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -12,39 +13,36 @@ interface NearbyPeerCardProps {
 }
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
+  const presenceStatus = getPresenceStatus(peer.last_active_at);
+  const presenceColor = getPresenceColor(presenceStatus);
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
-        <Avatar uri={peer.avatar_url} name={peer.full_name} size={50} />
+        <View style={styles.avatarContainer}>
+          <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
+          <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
+        </View>
+
         <View style={styles.info}>
           <View style={styles.nameRow}>
-            <Text style={styles.name}>{peer.full_name}</Text>
-            <Text style={styles.age}>, {peer.age}</Text>
+            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
+            {peer.age ? <Text style={styles.age}>, {peer.age}</Text> : null}
           </View>
-          <Text style={styles.username}>@{peer.username}</Text>
+          <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
         </View>
-        <SignalIndicator strength={peer.signal_strength} />
+
+        <DistanceBadge distance={peer.formatted_distance} />
       </View>
 
       <View style={styles.footer}>
-        <DistanceBadge distance={peer.formatted_distance} />
-        <View style={styles.presenceContainer}>
-          <View 
-            style={[
-              styles.presenceDot, 
-              { 
-                backgroundColor: 
-                  peer.presence_status === 'online' ? theme.colors.success :
-                  peer.presence_status === 'recently' ? theme.colors.warning : 
-                  theme.colors.border 
-              }
-            ]} 
-          />
-          <Text style={styles.presenceText}>
-            {peer.presence_status === 'online' ? 'Online now' : 
-             peer.presence_status === 'recently' ? 'Active recently' : 'Offline'}
-          </Text>
+        <View style={styles.signalRow}>
+          <Text style={styles.footerLabel}>Signal:</Text>
+          <SignalIndicator strength={peer.signal_strength} />
         </View>
+        <Text style={styles.statusText}>
+          {presenceStatus === 'online' ? 'Online now' : presenceStatus === 'recently' ? 'Active recently' : 'Offline'}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -62,10 +60,25 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  avatarContainer: {
+    position: 'relative',
+    marginRight: theme.spacing.md,
+  },
+  presenceDot: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: theme.colors.surface,
   },
   info: {
     flex: 1,
-    marginLeft: theme.spacing.md,
+    marginRight: theme.spacing.sm,
   },
   nameRow: {
     flexDirection: 'row',
@@ -89,22 +102,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: theme.spacing.md,
-    paddingTop: theme.spacing.sm,
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
+    paddingTop: theme.spacing.sm,
+    marginTop: theme.spacing.xs,
   },
-  presenceContainer: {
+  signalRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  presenceDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
+  footerLabel: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.text.tertiary,
+    marginRight: theme.spacing.xs,
   },
-  presenceText: {
+  statusText: {
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.secondary,
   },
