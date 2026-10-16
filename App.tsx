@@ -13,13 +13,13 @@ import ProximityFeedScreen from './src/screens/main/ProximityFeedScreen';
 import { ChatThreadScreen } from './src/screens/main/ChatThreadScreen';
 import { supabase } from './src/config/supabase';
 import { theme } from './src/constants/theme';
-import { Profile } from './src/types';
+import { UserProfile } from './src/types';
 
 const Tab = createBottomTabNavigator();
 
 function ProfileSettingsScreen() {
   const { session, signOut } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ function ProfileSettingsScreen() {
         .select('*')
         .eq('id', session.user.id)
         .single();
-      if (data) setProfile(data as Profile);
+      if (data) setProfile(data as UserProfile);
       setLoading(false);
     }
     fetchProfile();
