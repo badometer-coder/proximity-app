@@ -1,104 +1,90 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../constants/theme';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { useNearbyPeers } from '../../hooks/proximity/useNearbyPeers';
-import { useCurrentLocation } from '../../hooks/location/useCurrentLocation';
 import { ProximityHeader } from '../../components/proximity/ProximityHeader';
 import { NearbyPeerCard } from '../../components/proximity/NearbyPeerCard';
 import { EmptyState } from '../../components/common/EmptyState';
+import { theme } from '../../constants/theme';
 
-export const HomeScreen = () => {
-  const { location, errorMsg: locationError, refreshLocation } = useCurrentLocation();
-  const { peers, radius, setRadius, loading, refreshPeers } = useNearbyPeers();
+export default function HomeScreen() {
+  const { peers, isLoading, isRefreshing, radius, setRadius, lastUpdated, refreshPeers, errorMsg } = useNearbyPeers();
+  const [selectedPeer, setSelectedPeer] = useState<any>(null);
 
-  const handleRefresh = () => {
-    refreshLocation();
-    refreshPeers();
-  };
+  if (isLoading && !isRefreshing) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={theme.colors.primary.main} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <ProximityHeader 
-        radius={radius} 
-        onRadiusChange={setRadius} 
-        onRefresh={handleRefresh}
-        isRefreshing={loading}
+        lastUpdated={lastUpdated}
       />
-
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.banner}>
-          <View style={styles.bannerTextContainer}>
-            <Text style={styles.bannerTitle}>Radar Active</Text>
-            <Text style={styles.bannerSubtitle}>
-              {locationError ? 'Location unavailable' : `${peers.length} people found nearby`}
-            </Text>
-          </View>
-          <Ionicons name="radio" size={32} color={theme.colors.primary.main} />
+      
+      {errorMsg ? (
+        <View style={styles.errorBanner}>
+          <Text style={styles.errorText}>{errorMsg}</Text>
         </View>
+      ) : null}
 
-        <Text style={styles.sectionTitle}>Nearby Users</Text>
-
-        {peers.length === 0 ? (
-          <EmptyState 
-            icon="people-outline" 
-            title="No one nearby" 
-            message="Try increasing your radar radius using the filter above to find people further away." 
+      <FlatList
+        data={peers}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <NearbyPeerCard
+            peer={item}
+            onPress={() => setSelectedPeer(item)}
+            onWave={() => {}}
           />
-        ) : (
-          peers.map((peer) => (
-            <NearbyPeerCard 
-              key={peer.id} 
-              peer={peer} 
-              onPress={() => {}} 
-            />
-          ))
         )}
-      </ScrollView>
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={refreshPeers} tintColor={theme.colors.primary.main} />
+        }
+        ListEmptyComponent={
+          <EmptyState
+            icon="radio-outline"
+            title="No one nearby"
+            description="Expand your radius filter to find more peers around you."
+            actionLabel="Refresh Feed"
+            onAction={refreshPeers}
+          />
+        }
+      />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  scrollContent: {
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.colors.background,
+  },
+  listContent: {
     padding: 16,
     paddingBottom: 32,
   },
-  banner: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  errorBanner: {
+    backgroundColor: theme.colors.error + '22',
+    padding: 12,
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    marginBottom: 24,
+    borderColor: theme.colors.error,
   },
-  bannerTextContainer: {
-    flex: 1,
-    marginRight: 16,
-  },
-  bannerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: theme.colors.text.primary,
-    marginBottom: 4,
-  },
-  bannerSubtitle: {
+  errorText: {
+    color: theme.colors.error,
     fontSize: 14,
-    color: theme.colors.text.secondary,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginBottom: 12,
+    textAlign: 'center',
   },
 });
-
-export default HomeScreen;
