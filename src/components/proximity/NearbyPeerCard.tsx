@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { FormattedNearbyPeer } from '../../types';
 import { Avatar } from '../common/Avatar';
 import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
 import { theme } from '../../constants/theme';
-import { getPresenceColor } from '../../lib/utils';
+import { getPresenceColor, formatRelativeTime } from '../../lib/utils';
+import { Ionicons } from '@expo/vector-icons';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -22,30 +23,33 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
           <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
           <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
         </View>
+
         <View style={styles.info}>
           <View style={styles.nameRow}>
             <Text style={styles.name} numberOfLines={1}>
-              {peer.full_name}
+              {peer.full_name} <Text style={styles.age}>({peer.age})</Text>
             </Text>
-            <Text style={styles.age}>, {peer.age}</Text>
           </View>
-          <Text style={styles.username} numberOfLines={1}>
-            @{peer.username}
+          <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
+          <Text style={styles.lastActive}>
+            Active {formatRelativeTime(peer.last_active_at)}
           </Text>
         </View>
-        <SignalIndicator strength={peer.signal_strength} />
+
+        <View style={styles.badges}>
+          <DistanceBadge distance={peer.formatted_distance} />
+          <View style={styles.signalContainer}>
+            <SignalIndicator strength={peer.signal_strength} />
+          </View>
+        </View>
       </View>
 
-      <View style={styles.footer}>
-        <DistanceBadge distance={peer.formatted_distance} />
-        <Text style={styles.statusText}>
-          {peer.presence_status === 'online'
-            ? 'Active now'
-            : peer.presence_status === 'recently'
-            ? 'Recently active'
-            : 'Offline'}
-        </Text>
-      </View>
+      {peer.is_ble_discoverable && (
+        <View style={styles.bleBadge}>
+          <Ionicons name="bluetooth" size={12} color={theme.colors.primary.light} />
+          <Text style={styles.bleText}>BLE Discoverable</Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -55,14 +59,13 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
   },
   avatarContainer: {
     position: 'relative',
@@ -84,7 +87,7 @@ const styles = StyleSheet.create({
   },
   nameRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
   },
   name: {
     fontSize: theme.typography.fontSize.md,
@@ -92,7 +95,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text.primary,
   },
   age: {
-    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.regular,
     color: theme.colors.text.secondary,
   },
   username: {
@@ -100,16 +103,30 @@ const styles = StyleSheet.create({
     color: theme.colors.text.secondary,
     marginTop: 2,
   },
-  footer: {
+  lastActive: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.text.tertiary,
+    marginTop: 4,
+  },
+  badges: {
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    height: 50,
+  },
+  signalContainer: {
+    marginTop: 4,
+  },
+  bleBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    marginTop: theme.spacing.sm,
+    paddingTop: theme.spacing.xs,
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
-    paddingTop: theme.spacing.sm,
   },
-  statusText: {
+  bleText: {
     fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.secondary,
+    color: theme.colors.primary.light,
+    marginLeft: 4,
   },
 });
