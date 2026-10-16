@@ -1,11 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { FormattedNearbyPeer } from '../../types';
-import { theme } from '../../constants/theme';
 import { Avatar } from '../common/Avatar';
-import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
+import { DistanceBadge } from './DistanceBadge';
+import { theme } from '../../constants/theme';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -13,74 +12,46 @@ interface NearbyPeerCardProps {
 }
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
-  const getStatusColor = (status: FormattedNearbyPeer['presence_status']) => {
+  const getPresenceIndicatorColor = (status: string) => {
     switch (status) {
       case 'online':
         return theme.colors.success;
-      case 'recently':
+      case 'offline':
+        return theme.colors.text.tertiary;
+      default:
         return theme.colors.warning;
-      case 'offline':
-        return theme.colors.text.tertiary;
-      default:
-        return theme.colors.text.tertiary;
-    }
-  };
-
-  const getStatusText = (status: FormattedNearbyPeer['presence_status']) => {
-    switch (status) {
-      case 'online':
-        return 'Online now';
-      case 'recently':
-        return 'Recently active';
-      case 'offline':
-        return 'Offline';
-      default:
-        return 'Offline';
     }
   };
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.header}>
+      <View style={styles.headerRow}>
         <View style={styles.avatarContainer}>
           <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
           <View 
             style={[
-              styles.statusDot, 
-              { backgroundColor: getStatusColor(peer.presence_status) }
+              styles.presenceDot, 
+              { backgroundColor: getPresenceIndicatorColor(peer.presence_status) }
             ]} 
           />
         </View>
 
         <View style={styles.infoContainer}>
           <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>
-              {peer.full_name || peer.username}
-            </Text>
-            {peer.age ? <Text style={styles.age}>, {peer.age}</Text> : null}
+            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
+            <Text style={styles.age}>{peer.age}</Text>
           </View>
           <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
-          <Text style={styles.statusText}>{getStatusText(peer.presence_status)}</Text>
         </View>
 
-        <View style={styles.rightContainer}>
-          <DistanceBadge distance={peer.formatted_distance} />
-          <SignalIndicator strength={peer.signal_strength} />
-        </View>
+        <SignalIndicator strength={peer.signal_strength} />
       </View>
 
-      <View style={styles.footer}>
-        <View style={styles.bleIndicator}>
-          <Ionicons 
-            name={peer.is_ble_discoverable ? "bluetooth" : "location"} 
-            size={12} 
-            color={theme.colors.text.secondary} 
-          />
-          <Text style={styles.bleText}>
-            {peer.is_ble_discoverable ? 'BLE Discoverable' : 'GPS Location'}
-          </Text>
-        </View>
-        <Ionicons name="chevron-forward" size={16} color={theme.colors.text.tertiary} />
+      <View style={styles.footerRow}>
+        <DistanceBadge distance={peer.formatted_distance} />
+        <Text style={styles.statusText}>
+          {peer.presence_status === 'online' ? 'Active now' : 'Recently active'}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -95,7 +66,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  header: {
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -103,7 +74,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginRight: theme.spacing.md,
   },
-  statusDot: {
+  presenceDot: {
     position: 'absolute',
     bottom: 2,
     right: 2,
@@ -115,7 +86,7 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     flex: 1,
-    justifyContent: 'center',
+    marginRight: theme.spacing.sm,
   },
   nameRow: {
     flexDirection: 'row',
@@ -125,41 +96,29 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
+    marginRight: theme.spacing.xs,
+    flexShrink: 1,
   },
   age: {
-    fontSize: theme.typography.fontSize.md,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
   },
   username: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
-    marginBottom: 2,
+    marginTop: 2,
   },
-  statusText: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.tertiary,
-  },
-  rightContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    gap: theme.spacing.xs,
-  },
-  footer: {
+  footerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: theme.spacing.sm,
+    marginTop: theme.spacing.md,
     paddingTop: theme.spacing.sm,
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
   },
-  bleIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  bleText: {
+  statusText: {
     fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.secondary,
+    color: theme.colors.text.tertiary,
   },
 });
