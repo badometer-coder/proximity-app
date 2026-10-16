@@ -1,152 +1,165 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Platform, KeyboardAvoidingView, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
-import { supabase } from '../../config/supabase';
-import { theme } from '../../constants/theme';
 import { formatTime } from '../../lib/utils';
+import { theme } from '../../constants/theme';
 
-interface Props {
+interface ChatThreadScreenProps {
   userId: string;
   userName: string;
   myId: string | null;
   onBack: () => void;
 }
 
-export const ChatThreadScreen = ({ userId, userName, myId, onBack }: Props) => {
-  const { messages, isLoading } = useChatMessages(userId, myId);
-  const [text, setText] = useState('');
+export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, userName, myId, onBack }) => {
+  const { messages, sendMessage, isLoading } = useChatMessages(userId);
+  const [inputText, setInputText] = useState('');
 
   const handleSend = async () => {
-    if (!text.trim() || !myId) {
-      Alert.alert("Error", "Cannot send: No ID or empty text");
-      return;
-    }
-    
-    const tempText = text;
-    setText('');
-    
-    try {
-      const { error } = await (supabase as any).from('messages').insert({
-        sender_id: myId,
-        recipient_id: userId,
-        body: tempText,
-      });
-
-      if (error) {
-        Alert.alert("Database Error", error.message);
-      } else {
-        console.log("Message saved successfully!");
-      }
-    } catch (err) {
-      Alert.alert("App Error", "Could not send message");
-    }
-  };
-
-  const renderBubble = ({ item }: any) => {
-    const isOwn = item.is_own_message === true; 
-    return (
-      <View style={[styles.bubbleContainer, isOwn ? styles.rightBubble : styles.leftBubble]}>
-        <View style={[styles.bubble, isOwn ? styles.myBubble : styles.theirBubble]}>
-          <Text style={[styles.bubbleText, isOwn && styles.myText]}>{item.body}</Text>
-          <Text style={styles.timeText}>{formatTime(item.sent_at)} Synced</Text>
-        </View>
-      </View>
-    );
+    if (!inputText.trim()) return;
+    await sendMessage(inputText);
+    setInputText('');
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        style={styles.keyboardView} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Text style={styles.backText}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{userName}</Text>
-        </View>
+    <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
+      <View style={styles.header}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={theme.colors.text.primary} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{userName}</Text>
+      </View>
 
-        {isLoading ? (
-          <View style={styles.centered}><Text style={styles.loadingText}>Loading Chat...</Text></View>
-        ) : (
-          <FlatList 
-            data={messages} 
-            renderItem={renderBubble} 
-            keyExtractor={(item) => item.id} 
-            contentContainerStyle={styles.list} 
-            keyboardShouldPersistTaps="handled" 
-          />
-        )}
+      <FlatList
+        data={messages}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.messageList}
+        inverted
+        renderItem={({ item }) => {
+          const isMe = item.sender_id === myId;
+          return (
+            <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
+              <Text style={[styles.messageText, isMe ? styles.myMessageText : styles.theirMessageText]}>
+                {item.content}
+              </Text>
+              <Text style={[styles.timestamp, isMe ? styles.myTimestamp : styles.theirTimestamp]}>
+                {formatTime(item.created_at)}
+              </Text>
+            </View>
+          );
+        }}
+      />
 
-        <View style={styles.inputContainer}>
-          <TextInput 
-            style={styles.input} 
-            value={text} 
-            onChangeText={setText} 
-            placeholder="Type a message..." 
-            placeholderTextColor={theme.colors.text.tertiary}
-          />
-          <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-            <Text style={styles.sendText}>Send</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Footer Component */}
-        <View style={styles.footerContainer}>
-          <View style={styles.footerIndicator} />
-          <Text style={styles.footerText}>Secure P2P Proximity Encryption Active</Text>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Type a message..."
+          placeholderTextColor={theme.colors.text.tertiary}
+          value={inputText}
+          onChangeText={setInputText}
+        />
+        <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+          <Ionicons name="send" size={20} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
-  keyboardView: { flex: 1 },
-  header: { height: 60, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, borderBottomWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, gap: 16 },
-  backButton: { width: 60 },
-  backText: { fontSize: 16, color: theme.colors.primary.main, fontWeight: '600' },
-  headerTitle: { fontSize: 17, fontWeight: '700', color: theme.colors.text.primary, flex: 1 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadingText: { color: theme.colors.text.secondary },
-  list: { padding: 16, gap: 8 },
-  bubbleContainer: { flexDirection: 'row', justifyContent: 'flex-start' },
-  rightBubble: { justifyContent: 'flex-end' },
-  leftBubble: { justifyContent: 'flex-start' },
-  bubble: { maxWidth: '75%', padding: 12, borderRadius: 16 },
-  myBubble: { backgroundColor: theme.colors.primary.main, borderBottomRightRadius: 4 },
-  theirBubble: { backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderBottomLeftRadius: 4 },
-  bubbleText: { fontSize: 15, color: theme.colors.text.primary },
-  myText: { color: '#FFF' },
-  timeText: { fontSize: 10, color: theme.colors.text.tertiary, marginTop: 4, textAlign: 'right' },
-  inputContainer: { flexDirection: 'row', padding: 16, backgroundColor: theme.colors.surface, borderTopWidth: 1, borderColor: theme.colors.border, gap: 10 },
-  input: { flex: 1, backgroundColor: theme.colors.background, color: theme.colors.text.primary, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, fontSize: 15 },
-  sendButton: { backgroundColor: theme.colors.primary.main, borderRadius: 20, paddingHorizontal: 20, justifyContent: 'center' },
-  sendText: { color: '#FFF', fontWeight: '600' },
-  footerContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: theme.colors.surfaceLight,
-    borderTopWidth: 1,
-    borderColor: theme.colors.divider,
-    gap: 6,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
   },
-  footerIndicator: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: theme.colors.success,
+  backButton: {
+    marginRight: 16,
   },
-  footerText: {
-    fontSize: 11,
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: theme.colors.text.primary,
+  },
+  messageList: {
+    padding: 16,
+  },
+  messageBubble: {
+    maxWidth: '80%',
+    padding: 12,
+    borderRadius: 16,
+    marginBottom: 8,
+  },
+  myMessage: {
+    backgroundColor: theme.colors.primary.main,
+    alignSelf: 'flex-end',
+    borderBottomRightRadius: 4,
+  },
+  theirMessage: {
+    backgroundColor: theme.colors.surface,
+    alignSelf: 'flex-start',
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  messageText: {
+    fontSize: 15,
+  },
+  myMessageText: {
+    color: '#FFFFFF',
+  },
+  theirMessageText: {
+    color: theme.colors.text.primary,
+  },
+  timestamp: {
+    fontSize: 10,
+    marginTop: 4,
+    alignSelf: 'flex-end',
+  },
+  myTimestamp: {
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  theirTimestamp: {
     color: theme.colors.text.secondary,
-    fontWeight: '500',
-    letterSpacing: 0.2,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    padding: 12,
+    backgroundColor: theme.colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    alignItems: 'center',
+  },
+  input: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    color: theme.colors.text.primary,
+    fontSize: 15,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    maxHeight: 100,
+  },
+  sendButton: {
+    backgroundColor: theme.colors.primary.main,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginLeft: 8,
   },
 });
