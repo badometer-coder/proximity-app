@@ -1,15 +1,14 @@
-export type TransportMode = 'CLOUD_WEBSOCKET' | 'P2P_SOCKET';
-export type RadiusFilter = number;
-export type AppMode = 'ONLINE_GPS' | 'OFFLINE_BLE';
-export type MessageDeliveryStatus = 'sending' | 'synced' | 'pending_sync' | 'failed';
-export type UserPresenceStatus = 'online' | 'recently_active' | 'offline';
-export type SignalStrength = 'excellent' | 'good' | 'fair' | 'weak';
-export type LocationPermissionStatus = 'undetermined' | 'granted' | 'denied' | 'restricted';
+export type SignalStrength = 'weak' | 'moderate' | 'strong' | 'very_strong';
 
-export interface RadiusFilterOption {
-  value: RadiusFilter;
-  label: string;
-  shortLabel: string;
+export type UserPresenceStatus = 'online' | 'away' | 'offline' | 'busy';
+
+export interface GPSCoordinates {
+  latitude: number;
+  longitude: number;
+  accuracy?: number | null;
+  altitude?: number | null;
+  heading?: number | null;
+  speed?: number | null;
 }
 
 export interface NearbyPeer {
@@ -29,19 +28,57 @@ export interface FormattedNearbyPeer extends NearbyPeer {
   presence_status: UserPresenceStatus;
 }
 
-export interface GPSCoordinates {
-  latitude: number;
-  longitude: number;
-  accuracy: number;
-  altitude: number | null;
-  speed: number | null;
-  heading: number | null;
-  timestamp: number;
-}
-
 export interface ApiError {
   code: string;
   message: string;
   details?: Record<string, unknown>;
 }
 
+export interface UserProfile {
+  id: string;
+  username: string;
+  full_name: string;
+  age: number;
+  avatar_url: string | null;
+  bio: string | null;
+  is_ble_discoverable: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type Profile = UserProfile;
+
+export interface ChatMessage {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  created_at: string;
+  read: boolean;
+}
+
+export interface DirectMessage {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  message: string;
+  created_at: string;
+  is_read: boolean;
+}
+
+export interface BLEAdvertisedDevice {
+  id: string;
+  uuid: string;
+  rssi: number;
+  name?: string;
+  txPowerLevel?: number;
+  manufacturerData?: string;
+}
+
+export interface NotificationPayload {
+  title: string;
+  body: string;
+  data?: Record<string, unknown>;
+}
+
+export type ThemeMode = 'light' | 'dark' | 'system';
