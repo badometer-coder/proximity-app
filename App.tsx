@@ -10,7 +10,6 @@ import { LoginScreen } from './src/screens/auth/LoginScreen';
 import { ProfileSetupScreen } from './src/screens/auth/ProfileSetupScreen';
 import HomeScreen from './src/screens/main/HomeScreen';
 import ProximityFeedScreen from './src/screens/main/ProximityFeedScreen';
-import { ChatThreadScreen } from './src/screens/main/ChatThreadScreen';
 import { supabase } from './src/config/supabase';
 import { theme } from './src/constants/theme';
 
@@ -68,8 +67,6 @@ function ProfileSettingsScreen() {
 }
 
 function MainTabNavigator() {
-  const { session } = useAuth();
-  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -87,9 +84,7 @@ function MainTabNavigator() {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'ProximityFeedScreen') {
             iconName = focused ? 'radio' : 'radio-outline';
-          } else if (route.name === 'ChatThreadScreen') {
-            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
-          } else if (route.name === 'Profile') {
+          } else if (route.name === 'ProfileSettings') {
             iconName = focused ? 'person' : 'person-outline';
           }
 
@@ -105,23 +100,12 @@ function MainTabNavigator() {
       <Tab.Screen 
         name="ProximityFeedScreen" 
         component={ProximityFeedScreen} 
-        options={{ title: 'Proximity' }}
+        options={{ title: 'Proximity Feed' }}
       />
       <Tab.Screen 
-        name="ChatThreadScreen" 
-        children={() => (
-          <ChatThreadScreen 
-            userId="" 
-            userName="General Chat" 
-            myId={session?.user?.id ?? null} 
-            onBack={() => {}} 
-          />
-        )}
-        options={{ title: 'Chat' }}
-      />
-      <Tab.Screen 
-        name="Profile" 
+        name="ProfileSettings" 
         component={ProfileSettingsScreen} 
+        options={{ title: 'Profile' }}
       />
     </Tab.Navigator>
   );
