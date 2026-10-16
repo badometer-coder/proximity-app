@@ -13,23 +13,24 @@ import ProximityFeedScreen from './src/screens/main/ProximityFeedScreen';
 import { ChatThreadScreen } from './src/screens/main/ChatThreadScreen';
 import { supabase } from './src/config/supabase';
 import { theme } from './src/constants/theme';
+import { Profile } from './src/types';
 
 const Tab = createBottomTabNavigator();
 
 function ProfileSettingsScreen() {
   const { session, signOut } = useAuth();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchProfile() {
       if (!session?.user?.id) return;
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
         .single();
-      if (data) setProfile(data);
+      if (data) setProfile(data as Profile);
       setLoading(false);
     }
     fetchProfile();
@@ -141,13 +142,13 @@ function RootNavigator() {
         return;
       }
       setCheckingProfile(true);
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('profiles')
         .select('username')
         .eq('id', session.user.id)
         .single();
       
-      if (data && data.username) {
+      if (data && (data as any).username) {
         setProfileComplete(true);
       } else {
         setProfileComplete(false);
