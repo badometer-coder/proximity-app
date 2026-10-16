@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../constants/theme';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
 import { ChatMessage } from '../../types';
+import { theme } from '../../constants/theme';
+import { Ionicons } from '@expo/vector-icons';
 
 interface ChatThreadScreenProps {
   userId: string;
@@ -15,12 +15,30 @@ interface ChatThreadScreenProps {
 export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, userName, myId, onBack }) => {
   const [inputText, setInputText] = useState('');
   const { messages, isLoading, sendMessage } = useChatMessages(userId, userName);
+  const [sending, setSending] = useState(false);
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
     const textToSend = inputText;
     setInputText('');
-    await sendMessage(textToSend);
+    setSending(true);
+    try {
+      await sendMessage(textToSend);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const renderItem = ({ item }: { item: ChatMessage }) => {
+    const isMe = item.sender_id === myId;
+    return (
+      <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
+        <Text style={styles.messageText}>{item.message}</Text>
+        <Text style={styles.timestamp}>{new Date(item.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+      </View>
+    );
   };
 
   return (
@@ -40,16 +58,9 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
         <FlatList
           data={messages}
           keyExtractor={(item) => item.id}
+          renderItem={renderItem}
           contentContainerStyle={styles.messageList}
-          renderItem={({ item }) => {
-            const isMe = item.sender_id === myId;
-            return (
-              <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
-                <Text style={styles.messageText}>{item.message}</Text>
-                <Text style={styles.timestamp}>{new Date(item.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-              </View>
-            );
-          }}
+          inverted={false}
         />
       )}
 
@@ -61,8 +72,8 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
           value={inputText}
           onChangeText={setInputText}
         />
-        <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-          <Ionicons name="send" size={20} color="#FFFFFF" />
+        <TouchableOpacity style={styles.sendButton} onPress={handleSend} disabled={sending}>
+          <Ionicons name="send" size={20} color="#FFF" />
         </TouchableOpacity>
       </View>
     </View>
@@ -80,16 +91,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 48,
     paddingBottom: 16,
-    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
   },
   backButton: {
-    marginRight: 16,
+    marginRight: 12,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: theme.colors.text.primary,
   },
   center: {
@@ -101,30 +112,32 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   messageBubble: {
-    maxWidth: '80%',
+    maxWidth: '75%',
     padding: 12,
     borderRadius: 12,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   myMessage: {
     backgroundColor: theme.colors.primary.main,
     alignSelf: 'flex-end',
+    borderBottomRightRadius: 2,
   },
   theirMessage: {
     backgroundColor: theme.colors.surface,
     alignSelf: 'flex-start',
+    borderBottomLeftRadius: 2,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
   messageText: {
-    color: theme.colors.text.primary,
+    color: '#FFF',
     fontSize: 15,
   },
   timestamp: {
-    color: theme.colors.text.secondary,
     fontSize: 10,
+    color: 'rgba(255,255,255,0.7)',
     marginTop: 4,
-    textAlign: 'right',
+    alignSelf: 'flex-end',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -143,7 +156,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     color: theme.colors.text.primary,
-    fontSize: 14,
+    fontSize: 15,
     maxHeight: 100,
   },
   sendButton: {
