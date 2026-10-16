@@ -27,35 +27,33 @@ export const getSignalBars = (strength: SignalStrength): number => {
 };
 
 export const getPresenceStatus = (lastActiveAt: string): UserPresenceStatus => {
-  const diffMs = Date.now() - new Date(lastActiveAt).getTime();
-  const diffMins = diffMs / (1000 * 60);
-  if (diffMins < 5) return 'online';
-  if (diffMins < 30) return 'recently';
+  const diffMinutes = (Date.now() - new Date(lastActiveAt).getTime()) / (1000 * 60);
+  if (diffMinutes < 5) return 'online';
+  if (diffMinutes < 30) return 'recently';
   return 'offline';
 };
 
-export const getPresenceColor = (status: UserPresenceStatus): string => {
+export const getPresenceColor = (status: UserPresenceStatus, colors: { success: string; warning: string; text: { tertiary: string } }): string => {
   switch (status) {
-    case 'online': return '#10B981';
-    case 'recently': return '#F59E0B';
-    case 'offline': return '#6B7280';
-    default: return '#6B7280';
+    case 'online': return colors.success;
+    case 'recently': return colors.warning;
+    case 'offline': return colors.text.tertiary;
+    default: return colors.text.tertiary;
   }
 };
 
 export const formatRelativeTime = (timestamp: string): string => {
-  const diffMs = Date.now() - new Date(timestamp).getTime();
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  const diffHours = Math.floor(diffMins / 60);
+  const diffSeconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
+  if (diffSeconds < 60) return 'Just now';
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  const diffHours = Math.floor(diffMinutes / 60);
   if (diffHours < 24) return `${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d ago`;
+  return `${Math.floor(diffHours / 24)}d ago`;
 };
 
 export const getInitials = (name: string): string => {
-  if (!name) return '??';
+  if (!name) return '';
   return name
     .split(' ')
     .map(n => n[0])
@@ -64,7 +62,7 @@ export const getInitials = (name: string): string => {
     .slice(0, 2);
 };
 
-export const formatTime = (isoString: string): string => {
-  const date = new Date(isoString);
+export const formatTime = (timestamp: string): string => {
+  const date = new Date(timestamp);
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
