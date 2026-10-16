@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'expo';
 import { FormattedNearbyPeer } from '../../types';
 import { Avatar } from '../common/Avatar';
 import { SignalIndicator } from './SignalIndicator';
 import { DistanceBadge } from './DistanceBadge';
+import { getPresenceColor, formatRelativeTime } from '../../lib/utils';
 import { theme } from '../../constants/theme';
-import { getPresenceColor } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -17,20 +17,22 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.avatarContainer}>
-        <Avatar uri={peer.avatar_url} name={peer.full_name} size={52} />
-        <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
-      </View>
-
-      <View style={styles.infoContainer}>
-        <View style={styles.headerRow}>
-          <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
-          <Text style={styles.age}>{peer.age}</Text>
+      <View style={styles.header}>
+        <View style={styles.avatarContainer}>
+          <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
+          <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
         </View>
 
-        <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
+        <View style={styles.info}>
+          <View style={styles.nameRow}>
+            <Text style={styles.name} numberOfLines={1}>{peer.full_name || peer.username}</Text>
+            {peer.age ? <Text style={styles.age}>, {peer.age}</Text> : null}
+          </View>
+          <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
+          <Text style={styles.lastActive}>Active {formatRelativeTime(peer.last_active_at)}</Text>
+        </View>
 
-        <View style={styles.footerRow}>
+        <View style={styles.metrics}>
           <DistanceBadge distance={peer.formatted_distance} />
           <SignalIndicator strength={peer.signal_strength} />
         </View>
@@ -42,13 +44,15 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: theme.borderRadius.md,
     padding: theme.spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   avatarContainer: {
     position: 'relative',
@@ -64,35 +68,36 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: theme.colors.surface,
   },
-  infoContainer: {
+  info: {
     flex: 1,
+    justifyContent: 'center',
   },
-  headerRow: {
+  nameRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 2,
+    alignItems: 'baseline',
   },
   name: {
     fontSize: theme.typography.fontSize.md,
-    fontWeight: theme.typography.fontWeight.semibold as any,
+    fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
-    flex: 1,
-    marginRight: theme.spacing.xs,
   },
   age: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
-    fontWeight: theme.typography.fontWeight.medium as any,
   },
   username: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
-    marginBottom: theme.spacing.sm,
+    marginTop: 2,
   },
-  footerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  lastActive: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.text.tertiary,
+    marginTop: 4,
+  },
+  metrics: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    gap: theme.spacing.xs,
   },
 });
