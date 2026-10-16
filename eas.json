@@ -9,16 +9,10 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal",
-      "env": {
-        "NPM_FLAGS": "--legacy-peer-deps"
-      }
+      "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true,
-      "env": {
-        "NPM_FLAGS": "--legacy-peer-deps"
-      }
+      "autoIncrement": true
     }
   },
   "submit": {
