@@ -18,17 +18,25 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
         <Avatar uri={peer.avatar_url} name={peer.full_name} size={50} />
         <View style={styles.info}>
           <View style={styles.nameRow}>
-            <Text style={styles.name}>{peer.full_name}</Text>
+            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
             <Text style={styles.age}>, {peer.age}</Text>
           </View>
-          <Text style={styles.username}>@{peer.username}</Text>
+          <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
         </View>
         <SignalIndicator strength={peer.signal_strength} />
       </View>
 
       <View style={styles.footer}>
         <DistanceBadge distance={peer.formatted_distance} />
-        <View style={[styles.presenceDot, { backgroundColor: peer.presence_status === 'online' ? theme.colors.success : theme.colors.text.secondary }]} />
+        <View style={styles.statusContainer}>
+          <View style={[
+            styles.statusDot, 
+            { backgroundColor: peer.presence_status === 'online' ? theme.colors.success : theme.colors.text.tertiary }
+          ]} />
+          <Text style={styles.statusText}>
+            {peer.presence_status === 'online' ? 'Online' : 'Recently active'}
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -39,7 +47,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -53,12 +61,13 @@ const styles = StyleSheet.create({
   },
   nameRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'baseline',
   },
   name: {
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
+    flexShrink: 1,
   },
   age: {
     fontSize: theme.typography.fontSize.md,
@@ -78,9 +87,18 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
   },
-  presenceDot: {
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
+    marginRight: 6,
+  },
+  statusText: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.text.secondary,
   },
 });
