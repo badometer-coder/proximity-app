@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
-import { ChatMessage } from '../../types';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
+import { ChatMessage } from '../../types';
 import { theme } from '../../constants/theme';
 
 interface ChatThreadScreenProps {
@@ -11,12 +11,7 @@ interface ChatThreadScreenProps {
   onBack: () => void;
 }
 
-export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
-  userId,
-  userName,
-  myId,
-  onBack,
-}) => {
+export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, userName, myId, onBack }) => {
   const [inputText, setInputText] = useState('');
   const { messages, isLoading, sendMessage } = useChatMessages(userId, userName);
 
@@ -32,7 +27,7 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
         <TouchableOpacity onPress={onBack}>
           <Text style={styles.backButton}>Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{userName}</Text>
+        <Text style={styles.title}>{userName}</Text>
       </View>
 
       <FlatList
@@ -83,10 +78,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginRight: 16,
   },
-  headerTitle: {
-    color: theme.colors.text.primary,
+  title: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: theme.colors.text.primary,
   },
   messageList: {
     padding: 16,
@@ -104,8 +99,6 @@ const styles = StyleSheet.create({
   theirMessage: {
     backgroundColor: theme.colors.surface,
     alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
   },
   messageText: {
     color: theme.colors.text.primary,
@@ -125,16 +118,16 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 8,
     color: theme.colors.text.primary,
-    marginRight: 8,
+    height: 40,
   },
   sendButton: {
-    backgroundColor: theme.colors.primary.main,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    backgroundColor: theme.colors.primary.main,
     borderRadius: 8,
+    paddingHorizontal: 16,
+    marginLeft: 8,
   },
   sendButtonText: {
     color: '#FFF',
