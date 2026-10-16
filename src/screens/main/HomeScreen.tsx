@@ -23,7 +23,7 @@ export const HomeScreen: React.FC = () => {
   const { location, error: errorMsg, requestPermission: refreshLocation } = useCurrentLocation();
   const { peers, loading: peersLoading, refetch: refetchPeers } = useNearbyPeers({
     radiusKm: radius,
-    userLocation: location ? { latitude: location.coords.latitude, longitude: location.coords.longitude } : null,
+    userLocation: location ? { latitude: location.latitude, longitude: location.longitude } : null,
   });
 
   const colors = isDarkMode ? {
