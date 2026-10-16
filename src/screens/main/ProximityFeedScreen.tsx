@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-  RefreshControl,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useCurrentLocation } from '../../hooks/location/useCurrentLocation';
 import { useNearbyPeers } from '../../hooks/proximity/useNearbyPeers';
@@ -15,45 +7,30 @@ import { NearbyPeerCard } from '../../components/proximity/NearbyPeerCard';
 import { ProximityHeader } from '../../components/proximity/ProximityHeader';
 import { RadiusSlider } from '../../components/proximity/RadiusSlider';
 import { EmptyState } from '../../components/common/EmptyState';
-import { ChatThreadScreen } from './ChatThreadScreen';
-import { useAuth } from '../../hooks/auth/useAuth';
 import { theme } from '../../constants/theme';
 import { FormattedNearbyPeer } from '../../types';
 
 export default function ProximityFeedScreen() {
-  const { location, isLoading: locationLoading, error: locationError, permissionStatus, requestPermission } = useCurrentLocation();
-  const { peers, selectedRadius, isLoading: peersLoading, isRefreshing, error: peersError, lastFetchedAt, setRadius, refresh } = useNearbyPeers(location);
-  const { user } = useAuth();
-
+  const { location, isLoading: locationLoading, error: locationError, requestPermission } = useCurrentLocation();
+  const { peers, selectedRadius, isLoading, isRefreshing, error, lastFetchedAt, setRadius, refresh } = useNearbyPeers(location);
   const [selectedPeer, setSelectedPeer] = useState<FormattedNearbyPeer | null>(null);
 
-  if (selectedPeer) {
-    return (
-      <ChatThreadScreen
-        userId={selectedPeer.id}
-        userName={selectedPeer.full_name}
-        myId={user?.id ?? null}
-        onBack={() => setSelectedPeer(null)}
-      />
-    );
-  }
-
-  if (locationLoading || (peersLoading && !isRefreshing)) {
+  if (locationLoading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={theme.colors.primary.main} />
-        <Text style={styles.loadingText}>Finding people nearby...</Text>
+        <Text style={styles.loadingText}>Acquiring GPS location...</Text>
       </View>
     );
   }
 
-  if (permissionStatus !== 'granted') {
+  if (locationError) {
     return (
       <View style={styles.center}>
-        <EmptyState
-          icon={<Ionicons name="location-outline" size={48} color={theme.colors.text.secondary} />}
-          title="Location Permission Required"
-          description="We need your location to discover people around you."
+        <EmptyState 
+          icon={<Ionicons name="location-outline" size={48} color={theme.colors.error} />}
+          title="Location Required"
+          description={locationError}
         />
         <TouchableOpacity style={styles.button} onPress={requestPermission}>
           <Text style={styles.buttonText}>Grant Permission</Text>
@@ -62,59 +39,53 @@ export default function ProximityFeedScreen() {
     );
   }
 
-  if (locationError) {
-    return (
-      <View style={styles.center}>
-        <EmptyState
-          icon={<Ionicons name="alert-circle-outline" size={48} color={theme.colors.error} />}
-          title="Location Error"
-          description={locationError}
-        />
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <ProximityHeader lastUpdated={lastFetchedAt} />
-
-      <View style={styles.filterContainer}>
+      
+      <View style={styles.sliderContainer}>
         <RadiusSlider value={selectedRadius} onValueChange={setRadius} />
       </View>
 
-      {peersError && (
-        <View style={styles.errorBanner}>
-          <Text style={styles.errorText}>{peersError.message}</Text>
+      {isLoading && !isRefreshing ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={theme.colors.primary.main} />
+          <Text style={styles.loadingText}>Scanning nearby peers...</Text>
         </View>
-      )}
-
-      <FlatList
-        data={peers}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <NearbyPeerCard
-            peer={item}
-            onPress={() => setSelectedPeer(item)}
+      ) : error ? (
+        <View style={styles.center}>
+          <EmptyState 
+            icon={<Ionicons name="alert-circle-outline" size={48} color={theme.colors.error} />}
+            title="Scan Failed"
+            description={error.message}
           />
-        )}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={refresh}
-            tintColor={theme.colors.primary.main}
-          />
-        }
-        ListEmptyComponent={
-          !peersLoading ? (
-            <EmptyState
-              icon={<Ionicons name="people-outline" size={48} color={theme.colors.text.secondary} />}
-              title="No One Nearby"
-              description="Expand your radius or check back later to find more people."
+          <TouchableOpacity style={styles.button} onPress={refresh}>
+            <Text style={styles.buttonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={peers}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <NearbyPeerCard 
+              peer={item} 
+              onPress={() => setSelectedPeer(item)} 
             />
-          ) : null
-        }
-      />
+          )}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={theme.colors.primary.main} />
+          }
+          ListEmptyComponent={
+            <EmptyState 
+              icon={<Ionicons name="radio-outline" size={48} color={theme.colors.text.secondary} />}
+              title="No one nearby"
+              description="Expand your radius or check back soon to discover people around you."
+            />
+          }
+        />
+      )}
     </View>
   );
 }
@@ -136,29 +107,15 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 14,
   },
-  filterContainer: {
+  sliderContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
   listContent: {
     padding: 16,
     flexGrow: 1,
-  },
-  errorBanner: {
-    backgroundColor: theme.colors.error + '20',
-    padding: 12,
-    margin: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.error,
-  },
-  errorText: {
-    color: theme.colors.error,
-    fontSize: 14,
-    textAlign: 'center',
   },
   button: {
     backgroundColor: theme.colors.primary.main,
@@ -168,8 +125,8 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   buttonText: {
-    color: '#FFF',
-    fontSize: 16,
+    color: '#FFFFFF',
+    fontSize: 15,
     fontWeight: '600',
   },
 });
