@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps && npm install fs-extra --legacy-peer-deps
 
+      - name: TypeScript check
+        run: npx tsc --noEmit --skipLibCheck
+
       - name: Publish update
         run: eas update --auto --non-interactive
         env:
