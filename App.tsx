@@ -128,7 +128,7 @@ function MainTabNavigator() {
 }
 
 function RootNavigator() {
-  const { session, isLoading } = useAuth();
+  const { session, loading } = useAuth();
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const [checkingProfile, setCheckingProfile] = useState(false);
 
@@ -155,7 +155,7 @@ function RootNavigator() {
     checkProfile();
   }, [session]);
 
-  if (isLoading || checkingProfile) {
+  if (loading || checkingProfile) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={theme.colors.primary.main} />
