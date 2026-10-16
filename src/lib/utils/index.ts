@@ -1,11 +1,49 @@
-export const formatDistance = (meters: number): string => {
-  if (meters < 1000) {
-    return `${Math.round(meters)}m`;
-  }
-  return `${(meters / 1000).toFixed(1)}km`;
+export interface GPSCoordinates {
+  latitude: number;
+  longitude: number;
+}
+
+export const calculateDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const d = R * c; // Distance in km
+  return Math.round(d * 10) / 10;
 };
 
-export const formatTimeAgo = (dateString: string): string => {
+const deg2rad = (deg: number): number => {
+  return deg * (Math.PI / 180);
+};
+
+export const getInitials = (name?: string | null): string => {
+  if (!name) return 'U';
+  const parts = name.trim().split(' ');
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+};
+
+export const getPresenceColor = (status?: string): string => {
+  switch (status) {
+    case 'online':
+      return '#10B981';
+    case 'away':
+      return '#F59E0B';
+    case 'busy':
+      return '#EF4444';
+    default:
+      return '#6B7280';
+  }
+};
+
+export const formatRelativeTime = (dateString?: string | null): string => {
+  if (!dateString) return 'Just now';
   const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
@@ -19,23 +57,9 @@ export const formatTimeAgo = (dateString: string): string => {
   return `${days}d ago`;
 };
 
-export const getSignalStrengthColor = (rssi: number): string => {
-  if (rssi > -50) return '#10B981';
-  if (rssi > -70) return '#3B82F6';
-  if (rssi > -90) return '#F59E0B';
-  return '#EF4444';
-};
-
-export const truncateText = (text: string, maxLength: number): string => {
-  if (text.length <= maxLength) return text;
-  return text.substring(0, maxLength) + '...';
-};
-
-export const generateAvatarColor = (name: string): string => {
-  const colors = ['#6366F1', '#EC4899', '#8B5CF6', '#10B981', '#F59E0B', '#3B82F6'];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
+export const getSignalBars = (distanceKm: number): number => {
+  if (distanceKm < 0.5) return 4;
+  if (distanceKm < 2) return 3;
+  if (distanceKm < 5) return 2;
+  return 1;
 };
