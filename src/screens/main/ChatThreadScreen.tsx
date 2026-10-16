@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
 import { ChatMessage } from '../../types';
 import { theme } from '../../constants/theme';
+import { Ionicons } from '@expo/vector-icons';
 
 interface ChatThreadScreenProps {
   userId: string;
@@ -20,18 +20,20 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
     if (!inputText.trim()) return;
     const textToSend = inputText;
     setInputText('');
-    await sendMessage(textToSend);
+    try {
+      await sendMessage(textToSend);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const renderItem = ({ item }: { item: ChatMessage }) => {
     const isMe = item.sender_id === myId;
     return (
-      <View style={[styles.messageRow, isMe ? styles.myRow : styles.theirRow]}>
-        <View style={[styles.bubble, isMe ? styles.myBubble : styles.theirBubble]}>
-          <Text style={[styles.messageText, isMe ? styles.myText : styles.theirText]}>
-            {item.message}
-          </Text>
-        </View>
+      <View style={[styles.messageBubble, isMe ? styles.myBubble : styles.theirBubble]}>
+        <Text style={[styles.messageText, isMe ? styles.myText : styles.theirText]}>
+          {item.message}
+        </Text>
       </View>
     );
   };
@@ -45,13 +47,18 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
         <Text style={styles.headerTitle}>{userName}</Text>
       </View>
 
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.listContainer}
-        inverted
-      />
+      {isLoading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={theme.colors.primary.main} />
+        </View>
+      ) : (
+        <FlatList
+          data={messages}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContainer}
+        />
+      )}
 
       <View style={styles.inputContainer}>
         <TextInput
@@ -62,7 +69,7 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
           onChangeText={setInputText}
         />
         <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-          <Ionicons name="send" size={18} color="#FFF" />
+          <Ionicons name="send" size={20} color="#FFF" />
         </TouchableOpacity>
       </View>
     </View>
@@ -70,29 +77,59 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 48,
-    paddingBottom: 16,
-    backgroundColor: theme.colors.surface,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
   },
-  backButton: { marginRight: 16 },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: theme.colors.text.primary },
-  listContainer: { padding: 16 },
-  messageRow: { marginBottom: 12, flexDirection: 'row' },
-  myRow: { justifyContent: 'flex-end' },
-  theirRow: { justifyContent: 'flex-start' },
-  bubble: { maxWidth: '75%', padding: 12, borderRadius: 16 },
-  myBubble: { backgroundColor: theme.colors.primary.main, borderBottomRightRadius: 4 },
-  theirBubble: { backgroundColor: theme.colors.surface, borderBottomLeftRadius: 4 },
-  messageText: { fontSize: 15 },
-  myText: { color: '#FFF' },
-  theirText: { color: theme.colors.text.primary },
+  backButton: {
+    marginRight: 16,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: theme.colors.text.primary,
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  listContainer: {
+    padding: 16,
+  },
+  messageBubble: {
+    maxWidth: '75%',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  myBubble: {
+    backgroundColor: theme.colors.primary.main,
+    alignSelf: 'flex-end',
+  },
+  theirBubble: {
+    backgroundColor: theme.colors.surface,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  messageText: {
+    fontSize: 15,
+  },
+  myText: {
+    color: '#FFF',
+  },
+  theirText: {
+    color: theme.colors.text.primary,
+  },
   inputContainer: {
     flexDirection: 'row',
     padding: 12,
@@ -104,20 +141,18 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     backgroundColor: theme.colors.background,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
     color: theme.colors.text.primary,
-    fontSize: 15,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
     marginRight: 8,
   },
   sendButton: {
     backgroundColor: theme.colors.primary.main,
-    width: 40,
-    height: 40,
     borderRadius: 20,
+    padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
