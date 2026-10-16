@@ -1,86 +1,72 @@
 import { useState, useEffect, useCallback } from 'react';
+import { FormattedNearbyPeer, NearbyPeer, GPSCoordinates, SignalStrength, UserPresenceStatus, ApiError } from '../../types';
 import { supabase } from '../../config/supabase';
-import { GPSCoordinates, FormattedNearbyPeer, ApiError } from '../../types';
-import { calculateDistanceKm } from '../../lib/utils';
-import { useAuth } from '../auth/useAuth';
+import { formatDistance, getSignalStrength, getPresenceStatus } from '../../lib/utils';
 
-export const useNearbyPeers = (location: GPSCoordinates | null) => {
+export const useNearbyPeers = (initialLocation: GPSCoordinates | null) => {
   const [peers, setPeers] = useState<FormattedNearbyPeer[]>([]);
-  const [selectedRadius, setRadius] = useState<number>(5); // default 5km
+  const [selectedRadius, setRadius] = useState<number>(5000); // 5km default
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [lastFetchedAt, setLastFetchedAt] = useState<string | null>(null);
-  const { user } = useAuth();
 
-  const fetchPeers = useCallback(async (isRefresh = false) => {
-    if (!location) {
-      setIsLoading(false);
-      setIsRefreshing(false);
-      return;
-    }
-
-    if (isRefresh) {
-      setIsRefreshing(true);
-    } else {
-      setIsLoading(true);
-    }
-    setError(null);
-
+  const fetchPeers = useCallback(async (location: GPSCoordinates | null, radius: number) => {
     try {
-      const { data: profiles, error: dbError } = await (supabase as any)
-        .from('profiles')
-        .select('*')
-        .neq('id', user?.id || '');
+      setError(null);
+      
+      // Query profiles/peers from Supabase
+      let query = supabase.from('profiles').select('*').eq('is_ble_discoverable', true);
+      
+      const { data, error: sbError } = await query;
 
-      if (dbError) throw dbError;
+      if (sbError) {
+        throw { code: 'FETCH_FAILED', message: sbError.message } as ApiError;
+      }
 
-      const formatted: FormattedNearbyPeer[] = (profiles || [])
-        .map((profile: any) => {
-          const lat = profile.latitude ?? location.latitude + (Math.random() - 0.5) * 0.02;
-          const lon = profile.longitude ?? location.longitude + (Math.random() - 0.5) * 0.02;
-          const distanceKm = calculateDistanceKm(
-            location.latitude,
-            location.longitude,
-            lat,
-            lon
-          );
+      const mockPeers: FormattedNearbyPeer[] = (data || []).map((p: any) => {
+        const distance_meters = Math.floor(Math.random() * radius);
+        const signal_strength = getSignalStrength(distance_meters);
+        const presence_status = getPresenceStatus(p.last_active_at || new Date().toISOString());
+        
+        return {
+          id: p.id,
+          username: p.username || 'user',
+          full_name: p.full_name || 'Anonymous',
+          age: p.age || 25,
+          avatar_url: p.avatar_url || null,
+          is_ble_discoverable: p.is_ble_discoverable ?? true,
+          distance_meters,
+          last_active_at: p.last_active_at || new Date().toISOString(),
+          formatted_distance: formatDistance(distance_meters),
+          signal_strength,
+          presence_status,
+        };
+      });
 
-          return {
-            id: profile.id,
-            userId: profile.id,
-            fullName: profile.full_name || 'Anonymous',
-            username: profile.username || 'user',
-            avatarUrl: profile.avatar_url || null,
-            bio: profile.bio || '',
-            distanceKm,
-            distance: distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m away` : `${distanceKm.toFixed(1)}km away`,
-            lastSeen: profile.updated_at ? new Date(profile.updated_at).toLocaleTimeString() : 'Just now',
-            coordinates: { latitude: lat, longitude: lon },
-            isOnline: true,
-            statusMessage: profile.status_message || '',
-            age: profile.age,
-            gender: profile.gender,
-          };
-        })
-        .filter((peer: FormattedNearbyPeer) => peer.distanceKm <= selectedRadius);
-
-      setPeers(formatted);
-      setLastFetchedAt(new Date().toLocaleTimeString());
+      // Filter by radius
+      const filtered = mockPeers.filter(p => p.distance_meters <= radius);
+      setPeers(filtered);
+      setLastFetchedAt(new Date().toISOString());
     } catch (err: any) {
-      setError({ message: err.message || 'Failed to fetch nearby peers' });
+      setError({
+        code: err.code || 'UNKNOWN_ERROR',
+        message: err.message || 'An unexpected error occurred',
+      });
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [location, selectedRadius, user?.id]);
+  }, []);
 
   useEffect(() => {
-    fetchPeers();
-  }, [fetchPeers]);
+    setIsLoading(true);
+    fetchPeers(initialLocation, selectedRadius);
+  }, [initialLocation, selectedRadius, fetchPeers]);
 
   const refresh = async () => {
-    await fetchPeers(true);
+    setIsRefreshing(true);
+    await fetchPeers(initialLocation, selectedRadius);
   };
 
   return {
