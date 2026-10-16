@@ -1,6 +1,6 @@
-export type SignalStrength = 'weak' | 'moderate' | 'strong' | 'very_strong';
-
 export type UserPresenceStatus = 'online' | 'away' | 'offline' | 'busy';
+
+export type SignalStrength = 'excellent' | 'good' | 'fair' | 'poor';
 
 export interface GPSCoordinates {
   latitude: number;
@@ -10,6 +10,11 @@ export interface GPSCoordinates {
   heading?: number | null;
   speed?: number | null;
 }
+
+export type LocationPermissionStatus = 'granted' | 'denied' | 'undetermined';
+
+export type RadiusFilter = 100 | 500 | 1000 | 5000 | 10000;
+export type RadiusFilterOption = RadiusFilter;
 
 export interface NearbyPeer {
   id: string;
@@ -40,45 +45,8 @@ export interface UserProfile {
   full_name: string;
   age: number;
   avatar_url: string | null;
-  bio: string | null;
-  is_ble_discoverable: boolean;
-  created_at: string;
-  updated_at: string;
+  bio?: string;
+  is_ble_discoverable?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
-
-export type Profile = UserProfile;
-
-export interface ChatMessage {
-  id: string;
-  sender_id: string;
-  receiver_id: string;
-  content: string;
-  created_at: string;
-  read: boolean;
-}
-
-export interface DirectMessage {
-  id: string;
-  sender_id: string;
-  recipient_id: string;
-  message: string;
-  created_at: string;
-  is_read: boolean;
-}
-
-export interface BLEAdvertisedDevice {
-  id: string;
-  uuid: string;
-  rssi: number;
-  name?: string;
-  txPowerLevel?: number;
-  manufacturerData?: string;
-}
-
-export interface NotificationPayload {
-  title: string;
-  body: string;
-  data?: Record<string, unknown>;
-}
-
-export type ThemeMode = 'light' | 'dark' | 'system';
