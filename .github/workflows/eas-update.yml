@@ -39,6 +39,7 @@ jobs:
         if: failure()
         run: |
           TSC_ERRORS=$(cat /tmp/tsc-output.txt 2>/dev/null | grep "error TS" | head -10 || echo "See logs")
+          PAYLOAD=$(jq -n --arg err "CI failed. TypeScript errors:\n${TSC_ERRORS}\nFull logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" '{"error": $err}')
           curl -s -X POST "https://agent-swarm-ceti.onrender.com/ci-error" \
             -H "Content-Type: application/json" \
-            -d "{\"error\": \"CI failed. TypeScript errors:\n${TSC_ERRORS}\nFull logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
+            -d "$PAYLOAD"
