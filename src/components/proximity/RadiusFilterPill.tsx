@@ -5,14 +5,13 @@ import { theme } from '../../constants/theme';
 interface RadiusFilter {
   id: string;
   name?: string;
-  label?: string;
-  radiusKm: number;
+  value: number;
 }
 
 interface RadiusFilterPillProps {
   filter: RadiusFilter;
   isSelected: boolean;
-  onSelect: (radiusKm: number) => void;
+  onSelect: (value: number) => void;
 }
 
 export const RadiusFilterPill: React.FC<RadiusFilterPillProps> = ({
@@ -26,7 +25,7 @@ export const RadiusFilterPill: React.FC<RadiusFilterPillProps> = ({
         styles.pill,
         isSelected && styles.selectedPill,
       ]}
-      onPress={() => onSelect(filter.radiusKm)}
+      onPress={() => onSelect(filter.value)}
       activeOpacity={0.7}
     >
       <Text
@@ -35,7 +34,7 @@ export const RadiusFilterPill: React.FC<RadiusFilterPillProps> = ({
           isSelected && styles.selectedText,
         ]}
       >
-        {filter.name || filter.label || `${filter.radiusKm} km`}
+        {filter.name || `${filter.value}m`}
       </Text>
     </TouchableOpacity>
   );
@@ -56,12 +55,12 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primary.main,
   },
   text: {
-    fontSize: 14,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
-    fontWeight: '500',
+    fontWeight: theme.typography.fontWeight.medium,
   },
   selectedText: {
     color: theme.colors.text.primary,
-    fontWeight: '600',
+    fontWeight: theme.typography.fontWeight.semibold,
   },
 });
