@@ -18,13 +18,22 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
-    const textToSend = inputText;
+    await sendMessage(inputText);
     setInputText('');
-    try {
-      await sendMessage(textToSend);
-    } catch (err) {
-      console.error('Failed to send message:', err);
-    }
+  };
+
+  const renderItem = ({ item }: { item: ChatMessage }) => {
+    const isMe = item.sender_id === myId;
+    return (
+      <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
+        <Text style={[styles.messageText, isMe ? styles.myMessageText : styles.theirMessageText]}>
+          {item.message}
+        </Text>
+        <Text style={styles.timeText}>
+          {new Date(item.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </Text>
+      </View>
+    );
   };
 
   return (
@@ -38,17 +47,10 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
 
       <FlatList
         data={messages}
-        keyExtractor={(item: ChatMessage) => item.id}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
         contentContainerStyle={styles.messageList}
-        renderItem={({ item }) => {
-          const isMe = item.sender_id === myId;
-          return (
-            <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
-              <Text style={styles.messageText}>{item.message}</Text>
-              <Text style={styles.timestamp}>{new Date(item.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-            </View>
-          );
-        }}
+        inverted={false}
       />
 
       <View style={styles.inputContainer}>
@@ -79,7 +81,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
-    paddingTop: 48,
   },
   backButton: {
     marginRight: 16,
@@ -96,27 +97,32 @@ const styles = StyleSheet.create({
     maxWidth: '75%',
     padding: 12,
     borderRadius: 12,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   myMessage: {
-    backgroundColor: theme.colors.primary.main,
     alignSelf: 'flex-end',
+    backgroundColor: theme.colors.primary.main,
   },
   theirMessage: {
-    backgroundColor: theme.colors.surface,
     alignSelf: 'flex-start',
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
   messageText: {
-    color: '#FFFFFF',
     fontSize: 15,
   },
-  timestamp: {
-    color: 'rgba(255, 255, 255, 0.7)',
+  myMessageText: {
+    color: '#FFFFFF',
+  },
+  theirMessageText: {
+    color: theme.colors.text.primary,
+  },
+  timeText: {
     fontSize: 10,
+    color: theme.colors.text.secondary,
     marginTop: 4,
-    textAlign: 'right',
+    alignSelf: 'flex-end',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -134,16 +140,16 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    color: '#FFFFFF',
+    color: theme.colors.text.primary,
     fontSize: 15,
     marginRight: 8,
   },
   sendButton: {
     backgroundColor: theme.colors.primary.main,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: 20,
     width: 40,
     height: 40,
-    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
