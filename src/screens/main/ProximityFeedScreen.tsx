@@ -2,63 +2,35 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
+  StyleSheet,
+  ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
-  ActivityIndicator,
   Modal,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useCurrentLocation } from '../../hooks/location/useCurrentLocation';
 import { useNearbyPeers } from '../../hooks/proximity/useNearbyPeers';
-import { useChatMessages } from '../../hooks/messaging/useChatMessages';
-import { useAuth } from '../../hooks/auth/useAuth';
 import { NearbyPeerCard } from '../../components/proximity/NearbyPeerCard';
 import { ProximityHeader } from '../../components/proximity/ProximityHeader';
 import { RadiusSlider } from '../../components/proximity/RadiusSlider';
 import { EmptyState } from '../../components/common/EmptyState';
+import { ChatThreadScreen } from './ChatThreadScreen';
 import { theme } from '../../constants/theme';
 import { FormattedNearbyPeer } from '../../types';
+import { useAuth } from '../../hooks/auth/useAuth';
 
 export default function ProximityFeedScreen() {
-  const { location, isLoading: locationLoading, permissionStatus, requestPermission } = useCurrentLocation();
-  const { peers, selectedRadius, isLoading: peersLoading, isRefreshing, error, lastFetchedAt, setRadius, refresh } = useNearbyPeers(location);
-  const { user } = useAuth();
+  const { location, isLoading: isLocationLoading, error: locationError, requestPermission } = useCurrentLocation();
+  const { peers, selectedRadius, isLoading, isRefreshing, error, lastFetchedAt, setRadius, refresh } = useNearbyPeers(location);
+  const { session } = useAuth();
 
   const [selectedPeer, setSelectedPeer] = useState<FormattedNearbyPeer | null>(null);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [messageText, setMessageText] = useState('');
-  
-  const { messages, isLoading: messagesLoading, sendMessage } = useChatMessages(
-    selectedPeer ? selectedPeer.id : '',
-    selectedPeer ? selectedPeer.full_name : ''
-  );
+  const [showRadiusModal, setShowRadiusModal] = useState(false);
 
-  const handleSend = async () => {
-    if (!messageText.trim()) return;
-    await sendMessage(messageText.trim());
-    setMessageText('');
-  };
-
-  if (permissionStatus !== 'granted') {
-    return (
-      <View style={styles.centerContainer}>
-        <Ionicons name="location-outline" size={64} color={theme.colors.primary.main} style={{ marginBottom: 16 }} />
-        <Text style={styles.permissionTitle}>Location Access Required</Text>
-        <Text style={styles.permissionDesc}>We need your location to discover people around you in real-time.</Text>
-        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
-          <Text style={styles.permissionButtonText}>Grant Permission</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  if (locationLoading) {
+  if (isLocationLoading && !location) {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary.main} />
@@ -67,40 +39,59 @@ export default function ProximityFeedScreen() {
     );
   }
 
+  if (locationError) {
+    return (
+      <View style={styles.centerContainer}>
+        <EmptyState
+          icon="location-outline"
+          title="Location Access Required"
+          description={locationError}
+        />
+        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+          <Text style={styles.permissionButtonText}>Grant Permission</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ProximityHeader lastUpdated={lastFetchedAt} />
 
       <View style={styles.filterBar}>
-        <View style={styles.radiusContainer}>
-          <Text style={styles.radiusLabel}>Radius: {selectedRadius}m</Text>
-          <RadiusSlider value={selectedRadius} onValueChange={(val) => setRadius(val)} />
-        </View>
-        <TouchableOpacity style={styles.filterButton} onPress={() => setShowSettingsModal(true)}>
-          <Ionicons name="filter" size={20} color={theme.colors.text.primary} />
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={() => setShowRadiusModal(true)}
+        >
+          <Ionicons name="options-outline" size={16} color={theme.colors.primary.main} />
+          <Text style={styles.filterButtonText}>Radius: {selectedRadius}m</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.radarButton} onPress={refresh}>
+          <Ionicons name="reader-outline" size={16} color="#FFF" />
+          <Text style={styles.radarButtonText}>Scan</Text>
         </TouchableOpacity>
       </View>
 
-      {error && (
+      {error ? (
         <View style={styles.errorBanner}>
-          <Ionicons name="alert-circle" size={18} color={theme.colors.error} />
           <Text style={styles.errorText}>{error.message}</Text>
         </View>
-      )}
+      ) : null}
 
-      {peersLoading && !isRefreshing ? (
+      {isLoading && !isRefreshing ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary.main} />
           <Text style={styles.loadingText}>Scanning for nearby peers...</Text>
         </View>
       ) : peers.length === 0 ? (
-        <ScrollView contentContainerStyle={styles.emptyContainer} refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={theme.colors.primary.main} />}>
+        <View style={styles.emptyContainer}>
           <EmptyState
-            icon={<Ionicons name="reader-outline" size={48} color={theme.colors.text.secondary} />}
-            title="No one nearby"
-            description="Try expanding your distance radius or check back later."
+            icon="people-outline"
+            title="No One Nearby"
+            description="We couldn't find any peers within your selected radius. Try expanding your search range."
           />
-        </ScrollView>
+        </View>
       ) : (
         <FlatList
           data={peers}
@@ -111,72 +102,60 @@ export default function ProximityFeedScreen() {
               onPress={() => setSelectedPeer(item)}
             />
           )}
-          contentContainerStyle={styles.listContent}
-          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={theme.colors.primary.main} />}
+          contentContainerStyle={styles.listContainer}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={refresh}
+              tintColor={theme.colors.primary.main}
+            />
+          }
         />
       )}
 
-      {/* Chat / Profile Modal */}
-      <Modal visible={!!selectedPeer} animationType="slide" transparent={true}>
+      {/* Radius adjustment modal */}
+      <Modal
+        visible={showRadiusModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowRadiusModal(false)}
+      >
         <View style={styles.modalOverlay}>
-          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{selectedPeer?.full_name}</Text>
-              <TouchableOpacity onPress={() => setSelectedPeer(null)}>
-                <Ionicons name="close" size={24} color={theme.colors.text.primary} />
-              </TouchableOpacity>
-            </View>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Search Radius</Text>
+            <Text style={styles.modalSubtitle}>{selectedRadius} meters</Text>
 
-            <View style={styles.chatArea}>
-              {messagesLoading ? (
-                <ActivityIndicator size="small" color={theme.colors.primary.main} style={{ marginTop: 20 }} />
-              ) : (
-                <FlatList
-                  data={messages}
-                  keyExtractor={(item) => item.id}
-                  renderItem={({ item }) => {
-                    const isMe = item.sender_id === user?.id;
-                    return (
-                      <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
-                        <Text style={styles.messageText}>{item.message}</Text>
-                      </View>
-                    );
-                  }}
-                  contentContainerStyle={{ padding: 16 }}
-                />
-              )}
-            </View>
+            <RadiusSlider
+              value={selectedRadius}
+              onValueChange={(val) => setRadius(val)}
+            />
 
-            <View style={styles.inputBar}>
-              <TextInput
-                style={styles.chatInput}
-                placeholder="Type a message..."
-                placeholderTextColor={theme.colors.text.secondary}
-                value={messageText}
-                onChangeText={setMessageText}
-              />
-              <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-                <Ionicons name="send" size={18} color="#FFF" />
-              </TouchableOpacity>
-            </View>
-          </KeyboardAvoidingView>
-        </View>
-      </Modal>
-
-      {/* Settings Modal */}
-      <Modal visible={showSettingsModal} animationType="fade" transparent={true}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.settingsModalContent}>
-            <Text style={styles.modalTitle}>Feed Settings</Text>
-            <Text style={styles.settingsDesc}>Configure how your proximity radar operates.</Text>
-            
-            <TouchableOpacity style={styles.closeModalButton} onPress={() => setShowSettingsModal(false)}>
-              <Text style={styles.closeModalButtonText}>Done</Text>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowRadiusModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Done</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-    </View>
+
+      {/* Chat Thread Modal */}
+      <Modal
+        visible={selectedPeer !== null}
+        animationType="slide"
+        onRequestClose={() => setSelectedPeer(null)}
+      >
+        {selectedPeer && (
+          <ChatThreadScreen
+            userId={selectedPeer.id}
+            userName={selectedPeer.full_name || selectedPeer.username}
+            myId={session?.user?.id ?? null}
+            onBack={() => setSelectedPeer(null)}
+          />
+        )}
+      </Modal>
+    </SafeAreaView>
   );
 }
 
@@ -189,38 +168,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.background,
     padding: 24,
+    backgroundColor: theme.colors.background,
   },
   emptyContainer: {
-    flexGrow: 1,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
-  },
-  permissionTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: theme.colors.text.primary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  permissionDesc: {
-    fontSize: 14,
-    color: theme.colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  permissionButton: {
-    backgroundColor: theme.colors.primary.main,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 8,
-  },
-  permissionButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
   },
   loadingText: {
     color: theme.colors.text.secondary,
@@ -229,145 +184,102 @@ const styles = StyleSheet.create({
   },
   filterBar: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
-  radiusContainer: {
-    flex: 1,
-    marginRight: 12,
-  },
-  radiusLabel: {
-    fontSize: 12,
-    color: theme.colors.text.secondary,
-    marginBottom: 4,
-  },
   filterButton: {
-    padding: 8,
-    backgroundColor: theme.colors.surfaceLight,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  errorBanner: {
+  filterButtonText: {
+    color: theme.colors.text.primary,
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  radarButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    padding: 12,
-    marginHorizontal: 16,
-    marginTop: 12,
+    backgroundColor: theme.colors.primary.main,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.error,
+  },
+  radarButtonText: {
+    color: '#FFF',
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  errorBanner: {
+    backgroundColor: theme.colors.error,
+    padding: 10,
+    alignItems: 'center',
   },
   errorText: {
-    color: theme.colors.error,
-    marginLeft: 8,
+    color: '#FFF',
     fontSize: 13,
-    flex: 1,
   },
-  listContent: {
+  listContainer: {
     padding: 16,
+  },
+  permissionButton: {
+    marginTop: 16,
+    backgroundColor: theme.colors.primary.main,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  permissionButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'flex-end',
+    backgroundColor: theme.colors.overlay,
   },
   modalContent: {
-    height: '80%',
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    overflow: 'hidden',
-  },
-  settingsModalContent: {
-    backgroundColor: theme.colors.surface,
-    margin: 24,
     padding: 24,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: theme.colors.text.primary,
+    marginBottom: 4,
   },
-  settingsDesc: {
+  modalSubtitle: {
     fontSize: 14,
     color: theme.colors.text.secondary,
-    marginVertical: 12,
+    marginBottom: 20,
   },
-  closeModalButton: {
+  modalCloseButton: {
+    marginTop: 20,
     backgroundColor: theme.colors.primary.main,
-    padding: 12,
+    width: '100%',
+    padding: 14,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 16,
   },
-  closeModalButtonText: {
+  modalCloseButtonText: {
     color: '#FFF',
+    fontSize: 16,
     fontWeight: '600',
-  },
-  chatArea: {
-    flex: 1,
-  },
-  messageBubble: {
-    padding: 10,
-    borderRadius: 8,
-    marginVertical: 4,
-    maxWidth: '80%',
-  },
-  myMessage: {
-    backgroundColor: theme.colors.primary.main,
-    alignSelf: 'flex-end',
-  },
-  theirMessage: {
-    backgroundColor: theme.colors.surface,
-    alignSelf: 'flex-start',
-  },
-  messageText: {
-    color: '#FFF',
-    fontSize: 14,
-  },
-  inputBar: {
-    flexDirection: 'row',
-    padding: 12,
-    backgroundColor: theme.colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-    alignItems: 'center',
-  },
-  chatInput: {
-    flex: 1,
-    backgroundColor: theme.colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    color: '#FFF',
-    fontSize: 14,
-    marginRight: 8,
-  },
-  sendButton: {
-    backgroundColor: theme.colors.primary.main,
-    padding: 10,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
