@@ -10,6 +10,7 @@ import { LoginScreen } from './src/screens/auth/LoginScreen';
 import { ProfileSetupScreen } from './src/screens/auth/ProfileSetupScreen';
 import HomeScreen from './src/screens/main/HomeScreen';
 import ProximityFeedScreen from './src/screens/main/ProximityFeedScreen';
+import { ChatThreadScreen } from './src/screens/main/ChatThreadScreen';
 import { supabase } from './src/config/supabase';
 import { theme } from './src/constants/theme';
 
@@ -67,6 +68,8 @@ function ProfileSettingsScreen() {
 }
 
 function MainTabNavigator() {
+  const { session } = useAuth();
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -80,10 +83,12 @@ function MainTabNavigator() {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = 'home';
 
-          if (route.name === 'Home') {
+          if (route.name === 'HomeScreen') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Proximity Feed') {
+          } else if (route.name === 'ProximityFeedScreen') {
             iconName = focused ? 'radio' : 'radio-outline';
+          } else if (route.name === 'ChatThreadScreen') {
+            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
           }
@@ -92,9 +97,32 @@ function MainTabNavigator() {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Proximity Feed" component={ProximityFeedScreen} />
-      <Tab.Screen name="Profile" component={ProfileSettingsScreen} />
+      <Tab.Screen 
+        name="HomeScreen" 
+        component={HomeScreen} 
+        options={{ title: 'Home' }}
+      />
+      <Tab.Screen 
+        name="ProximityFeedScreen" 
+        component={ProximityFeedScreen} 
+        options={{ title: 'Proximity' }}
+      />
+      <Tab.Screen 
+        name="ChatThreadScreen" 
+        children={() => (
+          <ChatThreadScreen 
+            userId="" 
+            userName="General Chat" 
+            myId={session?.user?.id ?? null} 
+            onBack={() => {}} 
+          />
+        )}
+        options={{ title: 'Chat' }}
+      />
+      <Tab.Screen 
+        name="Profile" 
+        component={ProfileSettingsScreen} 
+      />
     </Tab.Navigator>
   );
 }
