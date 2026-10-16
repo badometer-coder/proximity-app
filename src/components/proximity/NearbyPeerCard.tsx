@@ -18,31 +18,15 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
         <Avatar uri={peer.avatar_url} name={peer.full_name} size={50} />
         <View style={styles.info}>
           <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
+            <Text style={styles.name}>{peer.full_name}</Text>
             <Text style={styles.age}>, {peer.age}</Text>
           </View>
-          <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
+          <Text style={styles.username}>@{peer.username}</Text>
         </View>
         <SignalIndicator strength={peer.signal_strength} />
       </View>
       <View style={styles.footer}>
-        <DistanceBadge distance={peer.formatted_distance} />
-        <View style={styles.presenceContainer}>
-          <View 
-            style={[
-              styles.presenceDot, 
-              { 
-                backgroundColor: 
-                  peer.presence_status === 'online' ? theme.colors.success :
-                  peer.presence_status === 'recently' ? theme.colors.warning : 
-                  theme.colors.text.tertiary 
-              }
-            ]} 
-          />
-          <Text style={styles.presenceText}>
-            {peer.presence_status === 'online' ? 'Online' : peer.presence_status === 'recently' ? 'Recently active' : 'Offline'}
-          </Text>
-        </View>
+        <DistanceBadge distance={peer.formatted_distance} status={peer.presence_status} />
       </View>
     </TouchableOpacity>
   );
@@ -51,9 +35,9 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -63,47 +47,30 @@ const styles = StyleSheet.create({
   },
   info: {
     flex: 1,
-    marginLeft: theme.spacing.md,
+    marginLeft: 12,
   },
   nameRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
   },
   name: {
-    fontSize: theme.typography.fontSize.md,
-    fontWeight: theme.typography.fontWeight.semibold,
+    fontSize: 16,
+    fontWeight: 'bold',
     color: theme.colors.text.primary,
   },
   age: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: 16,
     color: theme.colors.text.secondary,
   },
   username: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: 13,
     color: theme.colors.text.secondary,
     marginTop: 2,
   },
   footer: {
+    marginTop: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: theme.spacing.md,
-    paddingTop: theme.spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.divider,
-  },
-  presenceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  presenceDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  presenceText: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.secondary,
   },
 });
