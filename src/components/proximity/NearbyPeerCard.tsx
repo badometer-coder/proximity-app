@@ -2,10 +2,10 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { FormattedNearbyPeer } from '../../types';
 import { Avatar } from '../common/Avatar';
-import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
+import { DistanceBadge } from './DistanceBadge';
 import { theme } from '../../constants/theme';
-import { getPresenceColor, formatRelativeTime } from '../../lib/utils';
+import { getPresenceColor } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -16,17 +16,16 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
   const presenceColor = getPresenceColor(peer.presence_status);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.avatarContainer}>
-        <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={54} />
+        <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
         <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
       </View>
 
       <View style={styles.infoContainer}>
         <View style={styles.headerRow}>
           <Text style={styles.name} numberOfLines={1}>
-            {peer.full_name}
-            {peer.age ? <Text style={styles.age}>, {peer.age}</Text> : null}
+            {peer.full_name || peer.username}, {peer.age}
           </Text>
           <DistanceBadge distance={peer.formatted_distance} />
         </View>
@@ -37,8 +36,8 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 
         <View style={styles.footerRow}>
           <SignalIndicator strength={peer.signal_strength} />
-          <Text style={styles.lastActive}>
-            {peer.presence_status === 'online' ? 'Active now' : `Active ${formatRelativeTime(peer.last_active_at)}`}
+          <Text style={styles.presenceText}>
+            {peer.presence_status === 'online' ? 'Online' : peer.presence_status === 'recently' ? 'Recently active' : 'Offline'}
           </Text>
         </View>
       </View>
@@ -47,10 +46,10 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 };
 
 const styles = StyleSheet.create({
-  card: {
+  container: {
     flexDirection: 'row',
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: theme.borderRadius.md,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.sm,
     borderWidth: 1,
@@ -63,8 +62,8 @@ const styles = StyleSheet.create({
   },
   presenceDot: {
     position: 'absolute',
-    bottom: 2,
-    right: 2,
+    bottom: 0,
+    right: 0,
     width: 12,
     height: 12,
     borderRadius: 6,
@@ -87,21 +86,17 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: theme.spacing.sm,
   },
-  age: {
-    fontWeight: theme.typography.fontWeight.regular,
-    color: theme.colors.text.secondary,
-  },
   username: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
   },
   footerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  lastActive: {
+  presenceText: {
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.tertiary,
   },
