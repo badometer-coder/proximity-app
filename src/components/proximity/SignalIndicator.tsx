@@ -1,23 +1,52 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { theme } from '../../constants/theme';
-import { SignalStrength } from '../../types';
-import { getSignalBars } from '../../lib/utils';
 
-export const SignalIndicator = ({ strength }: { strength: SignalStrength }) => {
-  const bars = getSignalBars(strength);
-  const color = strength === 'excellent' ? theme.colors.success : strength === 'good' ? theme.colors.warning : strength === 'fair' ? theme.colors.orange : theme.colors.error;
+interface SignalIndicatorProps {
+  distanceKm: number;
+}
+
+export const SignalIndicator: React.FC<SignalIndicatorProps> = ({ distanceKm }) => {
+  const getSignalStrength = (distance: number) => {
+    if (distance <= 0.5) return 4;
+    if (distance <= 2) return 3;
+    if (distance <= 5) return 2;
+    return 1;
+  };
+
+  const strength = getSignalStrength(distanceKm);
 
   return (
     <View style={styles.container}>
-      {[1, 2, 3, 4].map((level) => (
-        <View key={level} style={[styles.bar, { height: 4 + (level * 3), backgroundColor: level <= bars ? color : theme.colors.border }]} />
+      {[1, 2, 3, 4].map((bar) => (
+        <View
+          key={bar}
+          style={[
+            styles.bar,
+            { height: bar * 5 + 4 },
+            bar <= strength ? styles.activeBar : styles.inactiveBar,
+          ]}
+        />
       ))}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flexDirection: 'row', alignItems: 'flex-end', gap: 2, height: 16 },
-  bar: { width: 4, borderRadius: 1 },
+  container: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    height: 24,
+    gap: 3,
+  },
+  bar: {
+    width: 4,
+    borderRadius: 2,
+  },
+  activeBar: {
+    backgroundColor: theme.colors.primary.main,
+  },
+  inactiveBar: {
+    backgroundColor: theme.colors.border,
+  },
 });
