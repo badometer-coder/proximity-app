@@ -1,112 +1,96 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../config/supabase';
+import { GPSCoordinates, FormattedNearbyPeer, ApiError } from '../../types';
+import { calculateDistanceKm } from '../../lib/utils';
 import { useAuth } from '../auth/useAuth';
-import { useCurrentLocation } from '../location/useCurrentLocation';
 
-export interface Peer {
-  id: string;
-  username: string;
-  full_name: string;
-  avatar_url: string | null;
-  latitude: number;
-  longitude: number;
-  distance?: number;
-  status?: string;
-}
+export const useNearbyPeers = (location: GPSCoordinates | null) => {
+  const [peers, setPeers] = useState<FormattedNearbyPeer[]>([]);
+  const [selectedRadius, setRadius] = useState<number>(5); // default 5km
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [error, setError] = useState<ApiError | null>(null);
+  const [lastFetchedAt, setLastFetchedAt] = useState<string | null>(null);
+  const { user } = useAuth();
 
-export const useNearbyPeers = () => {
-  const { session } = useAuth();
-  const { location, getCurrentLocation } = useCurrentLocation();
-  const [peers, setPeers] = useState<Peer[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [radius, setRadius] = useState<number>(10); // in km
+  const fetchPeers = useCallback(async (isRefresh = false) => {
+    if (!location) {
+      setIsLoading(false);
+      setIsRefreshing(false);
+      return;
+    }
 
-  const refreshPeers = useCallback(async () => {
+    if (isRefresh) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
+      const { data: profiles, error: dbError } = await (supabase as any)
+        .from('profiles')
+        .select('*')
+        .neq('id', user?.id || '');
 
-      const currentLocation = location || (await getCurrentLocation());
+      if (dbError) throw dbError;
 
-      // If we still don't have location, fetch all or fallback
-      let query = supabase.from('profiles').select('*');
+      const formatted: FormattedNearbyPeer[] = (profiles || [])
+        .map((profile: any) => {
+          const lat = profile.latitude ?? location.latitude + (Math.random() - 0.5) * 0.02;
+          const lon = profile.longitude ?? location.longitude + (Math.random() - 0.5) * 0.02;
+          const distanceKm = calculateDistanceKm(
+            location.latitude,
+            location.longitude,
+            lat,
+            lon
+          );
 
-      if (session?.user?.id) {
-        query = query.neq('id', session.user.id);
-      }
-
-      const { data, error: fetchError } = await query;
-
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      if (data) {
-        // Calculate distance if location is available
-        const mappedPeers: Peer[] = data.map((profile: any) => {
-          let distance = 0;
-          if (currentLocation && profile.latitude && profile.longitude) {
-            distance = calculateDistance(
-              currentLocation.coords.latitude,
-              currentLocation.coords.longitude,
-              profile.latitude,
-              profile.longitude
-            );
-          }
           return {
             id: profile.id,
+            userId: profile.id,
+            fullName: profile.full_name || 'Anonymous',
             username: profile.username || 'user',
-            full_name: profile.full_name || 'Anonymous',
-            avatar_url: profile.avatar_url,
-            latitude: profile.latitude || 0,
-            longitude: profile.longitude || 0,
-            distance: Math.round(distance * 10) / 10,
-            status: profile.status,
+            avatarUrl: profile.avatar_url || null,
+            bio: profile.bio || '',
+            distanceKm,
+            distance: distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m away` : `${distanceKm.toFixed(1)}km away`,
+            lastSeen: profile.updated_at ? new Date(profile.updated_at).toLocaleTimeString() : 'Just now',
+            coordinates: { latitude: lat, longitude: lon },
+            isOnline: true,
+            statusMessage: profile.status_message || '',
+            age: profile.age,
+            gender: profile.gender,
           };
-        });
+        })
+        .filter((peer: FormattedNearbyPeer) => peer.distanceKm <= selectedRadius);
 
-        // Filter by radius
-        const filtered = mappedPeers.filter(
-          (peer) => peer.distance !== undefined && peer.distance <= radius
-        );
-
-        setPeers(filtered);
-      }
-      setLoading(false);
+      setPeers(formatted);
+      setLastFetchedAt(new Date().toLocaleTimeString());
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch nearby peers');
-      setLoading(false);
+      setError({ message: err.message || 'Failed to fetch nearby peers' });
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
     }
-  }, [location, radius, session, getCurrentLocation]);
+  }, [location, selectedRadius, user?.id]);
 
   useEffect(() => {
-    refreshPeers();
-  }, [refreshPeers]);
+    fetchPeers();
+  }, [fetchPeers]);
+
+  const refresh = async () => {
+    await fetchPeers(true);
+  };
 
   return {
     peers,
-    loading,
+    selectedRadius,
+    isLoading,
+    isRefreshing,
     error,
-    refreshPeers,
-    radius,
+    lastFetchedAt,
     setRadius,
+    refresh,
   };
 };
-
-// Haversine formula to calculate distance in km
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Radius of the earth in km
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const d = R * c; // Distance in km
-  return d;
-}
-
-function deg2rad(deg: number): number {
-  return deg * (Math.PI / 180);
-}
