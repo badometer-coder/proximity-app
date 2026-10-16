@@ -9,7 +9,7 @@ import { NearbyPeerCard } from '../../components/proximity/NearbyPeerCard';
 import { EmptyState } from '../../components/common/EmptyState';
 import { theme } from '../../constants/theme';
 
-export const ProximityFeedScreen = () => {
+export const ProximityFeedScreen = ({ navigation }: { navigation?: any }) => {
   const { location, permissionStatus, isLoading: isLocLoading, error: locError, requestPermission } = useCurrentLocation();
   const { peers, selectedRadius, isLoading, isRefreshing, lastFetchedAt, setRadius, refresh } = useNearbyPeers(location);
 
@@ -43,9 +43,10 @@ export const ProximityFeedScreen = () => {
         renderItem={({ item }) => (
           <NearbyPeerCard 
             peer={item} 
-              onPress={() => {
-              const { openChat } = require('../../../App');
-              if (openChat) openChat(item.id, item.full_name);
+            onPress={() => {
+              if (navigation && navigation.navigate) {
+                navigation.navigate('Chat', { recipientId: item.id, recipientName: item.full_name });
+              }
             }} 
           />
         )}
