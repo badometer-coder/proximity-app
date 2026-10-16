@@ -1,103 +1,104 @@
-import React, { useEffect } from 'react';
-import { View, Text, FlatList, RefreshControl, ActivityIndicator, StyleSheet, Linking, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useCurrentLocation } from '../../hooks/location/useCurrentLocation';
+import React, { useState } from 'react';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNearbyPeers } from '../../hooks/proximity/useNearbyPeers';
-import { ProximityHeader } from '../../components/proximity/ProximityHeader';
-import { RadiusWheel } from '../../components/proximity/RadiusWheel';
+import { useCurrentLocation } from '../../hooks/location/useCurrentLocation';
 import { NearbyPeerCard } from '../../components/proximity/NearbyPeerCard';
+import { ProximityHeader } from '../../components/proximity/ProximityHeader';
 import { EmptyState } from '../../components/common/EmptyState';
 import { theme } from '../../constants/theme';
+import { NearbyPeer } from '../../types';
 
-export const ProximityFeedScreen = ({ navigation }: { navigation?: any }) => {
-  const { location, permissionStatus, isLoading: isLocLoading, error: locError, requestPermission } = useCurrentLocation();
-  const { peers, selectedRadius, isLoading, isRefreshing, lastFetchedAt, setRadius, refresh } = useNearbyPeers(location);
+export const ProximityFeedScreen = () => {
+  const { location, errorMsg: locationError } = useCurrentLocation();
+  const { peers, loading, radius, setRadius, refetch } = useNearbyPeers(location);
+  const [selectedPeer, setSelectedPeer] = useState<NearbyPeer | null>(null);
 
-  // 1. Ask for permission if undetermined
-  useEffect(() => {
-    if (permissionStatus === 'undetermined') {
-      requestPermission();
-    }
-  }, [permissionStatus, requestPermission]);
+  const handleSelectPeer = (peer: NearbyPeer) => {
+    setSelectedPeer(peer);
+  };
 
-  // 2. Handle permission denied error
-  useEffect(() => {
-    if (locError && permissionStatus === 'denied') {
-      Alert.alert('Location Required', 'Please enable location services in settings.', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Open Settings', onPress: () => Linking.openSettings() },
-      ]);
-    }
-  }, [locError, permissionStatus]);
-
-  const isInitialLoading = isLocLoading || (isLoading && !lastFetchedAt);
+  if (loading && peers.length === 0) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={theme.colors.primary.main} />
+        <Text style={styles.loadingText}>Scanning proximity radar...</Text>
+      </View>
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ProximityHeader lastUpdated={lastFetchedAt ?? null} />
-      
-      {/* The smooth iOS-style number scroller */}
-      <RadiusWheel value={selectedRadius} onValueChange={setRadius} />
-      
+    <View style={styles.container}>
+      <ProximityHeader 
+        radius={radius} 
+        onRadiusChange={setRadius} 
+        onRefresh={refetch} 
+        loading={loading} 
+      />
+
+      {locationError ? (
+        <View style={styles.errorBanner}>
+          <Text style={styles.errorText}>{locationError}</Text>
+        </View>
+      ) : null}
+
       <FlatList
         data={peers}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <NearbyPeerCard 
             peer={item} 
-            onPress={() => {
-              if (navigation && navigation.navigate) {
-                navigation.navigate('Chat', { recipientId: item.id, recipientName: item.full_name });
-              }
-            }} 
+            onPress={() => handleSelectPeer(item)} 
           />
         )}
+        contentContainerStyle={styles.listContainer}
         ListEmptyComponent={
-          isInitialLoading ? null : (
-            <EmptyState
-              icon="people-outline"
-              title="No One Nearby"
-              description="No active users found within your selected radius. Try increasing the distance."
-            />
-          )
+          <EmptyState 
+            icon="radio-outline" 
+            title="No one nearby" 
+            message="Expand your radius or check back later to find peers around you." 
+          />
         }
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={theme.colors.primary.main} />}
-        contentContainerStyle={[styles.list, peers.length === 0 && !isInitialLoading && styles.centerList]}
+        refreshing={loading}
+        onRefresh={refetch}
       />
-
-      <View style={styles.footer}>
-        <Ionicons name="radio-outline" size={16} color={theme.colors.primary.main} />
-        <Text style={styles.footerText}>Proximity radar is active</Text>
-      </View>
-
-      {isInitialLoading && (
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color={theme.colors.primary.main} />
-        </View>
-      )}
-    </SafeAreaView>
+    </View>
   );
 };
 
+export default ProximityFeedScreen;
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
-  list: { paddingHorizontal: 16, paddingBottom: 32 },
-  centerList: { flex: 1, justifyContent: 'center' },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  center: {
+    flex: 1,
     justifyContent: 'center',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.divider,
-    backgroundColor: theme.colors.surface,
+    alignItems: 'center',
+    backgroundColor: theme.colors.background,
   },
-  footerText: {
+  loadingText: {
     color: theme.colors.text.secondary,
-    fontSize: 12,
-    marginLeft: 6,
-    fontWeight: '500',
+    marginTop: 12,
+    fontSize: 15,
   },
-  loader: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: theme.colors.background, justifyContent: 'center', alignItems: 'center', zIndex: 10 },
+  listContainer: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  errorBanner: {
+    backgroundColor: theme.colors.error + '20',
+    padding: 12,
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.error,
+  },
+  errorText: {
+    color: theme.colors.error,
+    fontSize: 14,
+    textAlign: 'center',
+  },
 });
