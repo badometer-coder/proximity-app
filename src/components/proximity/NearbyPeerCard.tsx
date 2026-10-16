@@ -5,7 +5,6 @@ import { Avatar } from '../common/Avatar';
 import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
 import { theme } from '../../constants/theme';
-import { formatRelativeTime } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -18,18 +17,13 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
       <View style={styles.header}>
         <Avatar uri={peer.avatar_url} name={peer.full_name} size={50} />
         <View style={styles.info}>
-          <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
-            <Text style={styles.age}>, {peer.age}</Text>
-          </View>
-          <Text style={styles.username}>@{peer.username}</Text>
+          <Text style={styles.name}>{peer.full_name}</Text>
+          <Text style={styles.username}>@{peer.username} • {peer.age}</Text>
         </View>
         <SignalIndicator strength={peer.signal_strength} />
       </View>
-
       <View style={styles.footer}>
         <DistanceBadge distance={peer.formatted_distance} />
-        <Text style={styles.lastActive}>Active {formatRelativeTime(peer.last_active_at)}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -52,20 +46,10 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: theme.spacing.md,
   },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   name: {
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
-    maxWidth: '80%',
-  },
-  age: {
-    fontSize: theme.typography.fontSize.md,
-    fontWeight: theme.typography.fontWeight.regular,
-    color: theme.colors.text.secondary,
   },
   username: {
     fontSize: theme.typography.fontSize.sm,
@@ -74,15 +58,11 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: theme.spacing.md,
+    marginTop: theme.spacing.sm,
     paddingTop: theme.spacing.sm,
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
-  },
-  lastActive: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.tertiary,
+    justifyContent: 'flex-start',
   },
 });
