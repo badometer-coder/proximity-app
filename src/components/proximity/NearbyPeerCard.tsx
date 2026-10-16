@@ -14,29 +14,24 @@ interface NearbyPeerCardProps {
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.leftSection}>
-        <Avatar
-          uri={peer.avatar_url}
-          name={peer.full_name || peer.username}
-          size={56}
-        />
-        <View style={styles.infoSection}>
+      <View style={styles.header}>
+        <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
+        <View style={styles.info}>
           <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>
-              {peer.full_name}
-            </Text>
+            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
             <Text style={styles.age}>, {peer.age}</Text>
           </View>
-          <Text style={styles.username} numberOfLines={1}>
-            @{peer.username}
-          </Text>
-          <View style={styles.metaRow}>
-            <DistanceBadge distance={peer.formatted_distance} />
-          </View>
+          <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
         </View>
-      </View>
-      <View style={styles.rightSection}>
         <SignalIndicator strength={peer.signal_strength} />
+      </View>
+
+      <View style={styles.footer}>
+        <DistanceBadge distance={peer.formatted_distance} />
+        <View style={styles.presenceContainer}>
+          <View style={[styles.presenceDot, { backgroundColor: peer.presence_status === 'online' ? theme.colors.success : theme.colors.text.secondary }]} />
+          <Text style={styles.presenceText}>{peer.presence_status}</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -44,24 +39,20 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  leftSection: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
   },
-  infoSection: {
-    marginLeft: theme.spacing.md,
+  info: {
     flex: 1,
+    marginLeft: theme.spacing.md,
   },
   nameRow: {
     flexDirection: 'row',
@@ -71,6 +62,7 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
+    maxWidth: '80%',
   },
   age: {
     fontSize: theme.typography.fontSize.md,
@@ -79,15 +71,30 @@ const styles = StyleSheet.create({
   username: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
-    marginBottom: theme.spacing.xs,
+    marginTop: 2,
   },
-  metaRow: {
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: theme.spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.divider,
+    paddingTop: theme.spacing.sm,
+  },
+  presenceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  rightSection: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    paddingLeft: theme.spacing.sm,
+  presenceDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  presenceText: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.text.secondary,
+    textTransform: 'capitalize',
   },
 });
