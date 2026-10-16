@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { FormattedNearbyPeer } from '../../types';
 import { Avatar } from '../common/Avatar';
 import { SignalIndicator } from './SignalIndicator';
@@ -25,14 +25,14 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 
         <View style={styles.info}>
           <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
-            <Text style={styles.age}>, {peer.age}</Text>
+            <Text style={styles.name} numberOfLines={1}>{peer.full_name || peer.username}</Text>
+            {peer.age ? <Text style={styles.age}>, {peer.age}</Text> : null}
           </View>
           <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
-          <Text style={styles.lastActive}>Active {formatRelativeTime(peer.last_active_at)}</Text>
+          <Text style={styles.activity}>Active {formatRelativeTime(peer.last_active_at)}</Text>
         </View>
 
-        <View style={styles.meta}>
+        <View style={styles.metaContainer}>
           <DistanceBadge distance={peer.formatted_distance} />
           <View style={styles.signalContainer}>
             <SignalIndicator strength={peer.signal_strength} />
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -89,19 +89,20 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.primary.main,
+    color: theme.colors.primary.light,
     marginTop: 2,
   },
-  lastActive: {
+  activity: {
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.tertiary,
     marginTop: 4,
   },
-  meta: {
+  metaContainer: {
     alignItems: 'flex-end',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    height: 50,
   },
   signalContainer: {
-    marginTop: 6,
+    marginTop: 4,
   },
 });
