@@ -12,37 +12,48 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCurrentLocation } from '../../hooks/location/useCurrentLocation';
 import { useNearbyPeers } from '../../hooks/proximity/useNearbyPeers';
 import { NearbyPeerCard } from '../../components/proximity/NearbyPeerCard';
-import { RadiusSlider } from '../../components/proximity/RadiusSlider';
 import { ProximityHeader } from '../../components/proximity/ProximityHeader';
+import { RadiusSlider } from '../../components/proximity/RadiusSlider';
 import { EmptyState } from '../../components/common/EmptyState';
+import { ChatThreadScreen } from './ChatThreadScreen';
+import { useAuth } from '../../hooks/auth/useAuth';
 import { theme } from '../../constants/theme';
 import { FormattedNearbyPeer } from '../../types';
 
-interface ProximityFeedScreenProps {
-  onSelectPeer?: (peer: FormattedNearbyPeer) => void;
-}
+export default function ProximityFeedScreen() {
+  const { location, isLoading: locationLoading, error: locationError, permissionStatus, requestPermission } = useCurrentLocation();
+  const { peers, selectedRadius, isLoading: peersLoading, isRefreshing, error: peersError, lastFetchedAt, setRadius, refresh } = useNearbyPeers(location);
+  const { user } = useAuth();
 
-export default function ProximityFeedScreen({ onSelectPeer }: ProximityFeedScreenProps) {
-  const { location, isLoading: locationLoading, error: locationError, requestPermission } = useCurrentLocation();
-  const { peers, selectedRadius, isLoading, isRefreshing, error, lastFetchedAt, setRadius, refresh } = useNearbyPeers(location);
-  const [showRadiusSlider, setShowRadiusSlider] = useState(false);
+  const [selectedPeer, setSelectedPeer] = useState<FormattedNearbyPeer | null>(null);
 
-  if (locationLoading && !location) {
+  if (selectedPeer) {
+    return (
+      <ChatThreadScreen
+        userId={selectedPeer.id}
+        userName={selectedPeer.full_name}
+        myId={user?.id ?? null}
+        onBack={() => setSelectedPeer(null)}
+      />
+    );
+  }
+
+  if (locationLoading || (peersLoading && !isRefreshing)) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={theme.colors.primary.main} />
-        <Text style={styles.loadingText}>Getting your location...</Text>
+        <Text style={styles.loadingText}>Finding people nearby...</Text>
       </View>
     );
   }
 
-  if (locationError) {
+  if (permissionStatus !== 'granted') {
     return (
       <View style={styles.center}>
         <EmptyState
-          icon={<Ionicons name="location-outline" size={48} color={theme.colors.error} />}
-          title="Location Permission Needed"
-          description={locationError}
+          icon={<Ionicons name="location-outline" size={48} color={theme.colors.text.secondary} />}
+          title="Location Permission Required"
+          description="We need your location to discover people around you."
         />
         <TouchableOpacity style={styles.button} onPress={requestPermission}>
           <Text style={styles.buttonText}>Grant Permission</Text>
@@ -51,69 +62,59 @@ export default function ProximityFeedScreen({ onSelectPeer }: ProximityFeedScree
     );
   }
 
+  if (locationError) {
+    return (
+      <View style={styles.center}>
+        <EmptyState
+          icon={<Ionicons name="alert-circle-outline" size={48} color={theme.colors.error} />}
+          title="Location Error"
+          description={locationError}
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <ProximityHeader lastUpdated={lastFetchedAt} />
 
-      <View style={styles.filterRow}>
-        <TouchableOpacity
-          style={styles.filterButton}
-          onPress={() => setShowRadiusSlider(!showRadiusSlider)}
-        >
-          <Ionicons name="options-outline" size={16} color={theme.colors.primary.main} />
-          <Text style={styles.filterButtonText}>Radius: {selectedRadius}m</Text>
-        </TouchableOpacity>
+      <View style={styles.filterContainer}>
+        <RadiusSlider value={selectedRadius} onValueChange={setRadius} />
       </View>
 
-      {showRadiusSlider && (
-        <View style={styles.sliderContainer}>
-          <RadiusSlider value={selectedRadius} onValueChange={(val) => setRadius(val)} />
+      {peersError && (
+        <View style={styles.errorBanner}>
+          <Text style={styles.errorText}>{peersError.message}</Text>
         </View>
       )}
 
-      {isLoading && !isRefreshing ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={theme.colors.primary.main} />
-          <Text style={styles.loadingText}>Scanning for nearby peers...</Text>
-        </View>
-      ) : error ? (
-        <View style={styles.center}>
-          <EmptyState
-            icon={<Ionicons name="alert-circle-outline" size={48} color={theme.colors.error} />}
-            title="Failed to Load Peers"
-            description={error.message}
+      <FlatList
+        data={peers}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <NearbyPeerCard
+            peer={item}
+            onPress={() => setSelectedPeer(item)}
           />
-          <TouchableOpacity style={styles.button} onPress={refresh}>
-            <Text style={styles.buttonText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <FlatList
-          data={peers}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <NearbyPeerCard
-              peer={item}
-              onPress={() => {
-                if (onSelectPeer) {
-                  onSelectPeer(item);
-                }
-              }}
-            />
-          )}
-          contentContainerStyle={styles.listContainer}
-          refreshControl={
-            <RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={theme.colors.primary.main} />
-          }
-          ListEmptyComponent={
+        )}
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={refresh}
+            tintColor={theme.colors.primary.main}
+          />
+        }
+        ListEmptyComponent={
+          !peersLoading ? (
             <EmptyState
-              icon={<Ionicons name="radio-outline" size={48} color={theme.colors.text.secondary} />}
+              icon={<Ionicons name="people-outline" size={48} color={theme.colors.text.secondary} />}
               title="No One Nearby"
-              description="Try expanding your radius to find more people around you."
+              description="Expand your radius or check back later to find more people."
             />
-          }
-        />
-      )}
+          ) : null
+        }
+      />
     </View>
   );
 }
@@ -128,55 +129,47 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: theme.colors.background,
-    padding: theme.spacing.lg,
+    padding: 24,
   },
   loadingText: {
     color: theme.colors.text.secondary,
-    marginTop: theme.spacing.md,
-    fontSize: theme.typography.fontSize.sm,
+    marginTop: 16,
+    fontSize: 14,
   },
-  filterRow: {
-    flexDirection: 'row',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.divider,
-  },
-  filterButton: {
-    flexDirection: 'row',
-    alignItem: 'center',
+  filterContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: theme.colors.surface,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.borderRadius.full,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  filterButtonText: {
-    color: theme.colors.text.primary,
-    marginLeft: theme.spacing.xs,
-    fontSize: theme.typography.fontSize.sm,
-    fontWeight: theme.typography.fontWeight.medium,
-  },
-  sliderContainer: {
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surfaceLight,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.divider,
+    borderBottomColor: theme.colors.border,
   },
-  listContainer: {
-    padding: theme.spacing.md,
+  listContent: {
+    padding: 16,
+    flexGrow: 1,
+  },
+  errorBanner: {
+    backgroundColor: theme.colors.error + '20',
+    padding: 12,
+    margin: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.error,
+  },
+  errorText: {
+    color: theme.colors.error,
+    fontSize: 14,
+    textAlign: 'center',
   },
   button: {
     backgroundColor: theme.colors.primary.main,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    marginTop: theme.spacing.md,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 16,
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontWeight: theme.typography.fontWeight.semibold,
-    fontSize: theme.typography.fontSize.md,
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
