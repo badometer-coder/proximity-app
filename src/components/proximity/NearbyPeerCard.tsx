@@ -1,10 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { FormattedNearbyPeer } from '../../types';
 import { Avatar } from '../common/Avatar';
-import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
+import { DistanceBadge } from './DistanceBadge';
 import { theme } from '../../constants/theme';
 import { getPresenceColor, formatRelativeTime } from '../../lib/utils';
 
@@ -21,40 +20,24 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
-          <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
+          <View style={[styles.presenceIndicator, { backgroundColor: presenceColor }]} />
         </View>
 
-        <View style={styles.userInfo}>
+        <View style={styles.info}>
           <View style={styles.nameRow}>
             <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
-            {peer.age ? <Text style={styles.age}>, {peer.age}</Text> : null}
+            <Text style={styles.age}>, {peer.age}</Text>
           </View>
           <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
-          <Text style={styles.lastActive}>
-            Active {formatRelativeTime(peer.last_active_at)}
-          </Text>
+          <Text style={styles.lastActive}>Active {formatRelativeTime(peer.last_active_at)}</Text>
         </View>
 
-        <View style={styles.metrics}>
+        <View style={styles.badges}>
           <DistanceBadge distance={peer.formatted_distance} />
-          <SignalIndicator strength={peer.signal_strength} />
+          <View style={styles.signalContainer}>
+            <SignalIndicator strength={peer.signal_strength} />
+          </View>
         </View>
-      </View>
-
-      <View style={styles.footer}>
-        <View style={styles.badgeContainer}>
-          {peer.is_ble_discoverable && (
-            <View style={styles.bleBadge}>
-              <Ionicons name="bluetooth" size={12} color={theme.colors.info} />
-              <Text style={styles.bleText}>BLE</Text>
-            </View>
-          )}
-          <Text style={styles.statusText}>
-            {peer.presence_status === 'online' ? 'Online now' : peer.presence_status === 'recently' ? 'Recently active' : 'Away'}
-          </Text>
-        </View>
-
-        <Ionicons name="chevron-forward" size={18} color={theme.colors.text.tertiary} />
       </View>
     </TouchableOpacity>
   );
@@ -65,7 +48,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -77,23 +60,23 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginRight: theme.spacing.md,
   },
-  presenceDot: {
+  presenceIndicator: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    bottom: 2,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     borderWidth: 2,
     borderColor: theme.colors.surface,
   },
-  userInfo: {
+  info: {
     flex: 1,
     justifyContent: 'center',
   },
   nameRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
   },
   name: {
     fontSize: theme.typography.fontSize.md,
@@ -101,7 +84,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text.primary,
   },
   age: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: theme.typography.fontSize.md,
     color: theme.colors.text.secondary,
   },
   username: {
@@ -113,40 +96,12 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.tertiary,
   },
-  metrics: {
+  badges: {
     alignItems: 'flex-end',
     justifyContent: 'center',
+    gap: theme.spacing.xs,
   },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: theme.spacing.sm,
-    paddingTop: theme.spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.divider,
-  },
-  badgeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  bleBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: theme.borderRadius.sm,
-    marginRight: theme.spacing.sm,
-  },
-  bleText: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.info,
-    fontWeight: theme.typography.fontWeight.semibold,
-    marginLeft: 2,
-  },
-  statusText: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.secondary,
+  signalContainer: {
+    marginTop: 4,
   },
 });
