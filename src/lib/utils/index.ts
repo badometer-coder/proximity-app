@@ -1,68 +1,74 @@
 import { SignalStrength, UserPresenceStatus } from '../../types';
 
-export const formatDistance = (meters: number): string => {
+export function formatDistance(meters: number): string {
   if (meters < 1000) {
     return `${Math.round(meters)}m`;
   }
   return `${(meters / 1000).toFixed(1)}km`;
-};
+}
 
-export const getSignalStrength = (distanceMeters: number): SignalStrength => {
-  if (distanceMeters < 10) return 'excellent';
-  if (distanceMeters < 30) return 'good';
-  if (distanceMeters < 60) return 'fair';
-  if (distanceMeters < 100) return 'weak';
+export function getSignalStrength(meters: number): SignalStrength {
+  if (meters <= 10) return 'excellent';
+  if (meters <= 50) return 'good';
+  if (meters <= 150) return 'fair';
+  if (meters <= 500) return 'weak';
   return 'none';
-};
+}
 
-export const getSignalBars = (strength: SignalStrength): number => {
+export function getSignalBars(strength: SignalStrength): number {
   switch (strength) {
     case 'excellent': return 4;
     case 'good': return 3;
     case 'fair': return 2;
     case 'weak': return 1;
     case 'none': return 0;
-    default: return 0;
   }
-};
+}
 
-export const getPresenceStatus = (lastActiveAt: string): UserPresenceStatus => {
-  const diffMinutes = (Date.now() - new Date(lastActiveAt).getTime()) / (1000 * 60);
-  if (diffMinutes < 5) return 'online';
-  if (diffMinutes < 30) return 'recently';
+export function getPresenceStatus(lastActiveAt: string): UserPresenceStatus {
+  const diffMs = Date.now() - new Date(lastActiveAt).getTime();
+  const diffMins = diffMs / (1000 * 60);
+
+  if (diffMins < 5) return 'online';
+  if (diffMins < 30) return 'recently';
   return 'offline';
-};
+}
 
-export const getPresenceColor = (status: UserPresenceStatus, colors: { success: string; warning: string; text: { tertiary: string } }): string => {
+export function getPresenceColor(status: UserPresenceStatus): string {
   switch (status) {
-    case 'online': return colors.success;
-    case 'recently': return colors.warning;
-    case 'offline': return colors.text.tertiary;
-    default: return colors.text.tertiary;
+    case 'online': return '#10B981';
+    case 'recently': return '#F59E0B';
+    case 'offline': return '#6B7280';
   }
-};
+}
 
-export const formatRelativeTime = (timestamp: string): string => {
-  const diffSeconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
-  if (diffSeconds < 60) return 'Just now';
-  const diffMinutes = Math.floor(diffSeconds / 60);
-  if (diffMinutes < 60) return `${diffMinutes}m ago`;
-  const diffHours = Math.floor(diffMinutes / 60);
+export function formatRelativeTime(timestamp: string): string {
+  const diffMs = Date.now() - new Date(timestamp).getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSecs < 60) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
-  return `${Math.floor(diffHours / 24)}d ago`;
-};
+  return `${diffDays}d ago`;
+}
 
-export const getInitials = (name: string): string => {
-  if (!name) return '';
-  return name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-};
+export function getInitials(name: string): string {
+  if (!name) return '?';
+  const parts = name.trim().split(' ');
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+}
 
-export const formatTime = (timestamp: string): string => {
-  const date = new Date(timestamp);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-};
+export function formatTime(timestamp: string): string {
+  try {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+}
