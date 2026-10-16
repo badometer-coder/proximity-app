@@ -5,6 +5,7 @@ import { Avatar } from '../common/Avatar';
 import { SignalIndicator } from './SignalIndicator';
 import { DistanceBadge } from './DistanceBadge';
 import { theme } from '../../constants/theme';
+import { getInitials } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -13,19 +14,17 @@ interface NearbyPeerCardProps {
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.header}>
-        <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
-        <View style={styles.info}>
-          <Text style={styles.name}>{peer.full_name || peer.username}</Text>
+        <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username || getInitials(peer.full_name)} size={50} />
+        <View style={styles.userInfo}>
+          <Text style={styles.name}>{peer.full_name}</Text>
           <Text style={styles.username}>@{peer.username} • {peer.age}</Text>
         </View>
-        <DistanceBadge distance={peer.formatted_distance} />
+        <SignalIndicator strength={peer.signal_strength} />
       </View>
       <View style={styles.footer}>
-        <SignalIndicator strength={peer.signal_strength} />
-        <View style={[styles.statusDot, { backgroundColor: peer.presence_status === 'online' ? theme.colors.success : theme.colors.text.tertiary }]} />
-        <Text style={styles.statusText}>{peer.presence_status}</Text>
+        <DistanceBadge distance={peer.formatted_distance} />
       </View>
     </TouchableOpacity>
   );
@@ -34,20 +33,19 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
   },
-  info: {
+  userInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: theme.spacing.md,
   },
   name: {
     fontSize: 16,
@@ -61,21 +59,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.divider,
-    paddingTop: 10,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginLeft: 12,
-    marginRight: 6,
-  },
-  statusText: {
-    fontSize: 12,
-    color: theme.colors.text.secondary,
-    textTransform: 'capitalize',
+    justifyContent: 'flex-end',
+    marginTop: theme.spacing.sm,
   },
 });
