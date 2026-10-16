@@ -5,12 +5,26 @@ import { theme } from '../../constants/theme';
 import { supabase } from '../../config/supabase';
 import { ProfileRow } from '../../types/database';
 import { openChat } from '../../../App';
+import { ProximityHeader } from '../../components/proximity/ProximityHeader';
+import { RadiusSlider } from '../../components/proximity/RadiusSlider';
+import { RadiusWheel } from '../../components/proximity/RadiusWheel';
+import { NearbyPeerCard } from '../../components/proximity/NearbyPeerCard';
+import { useNearbyPeers } from '../../hooks/proximity/useNearbyPeers';
+import { useCurrentLocation } from '../../hooks/location/useCurrentLocation';
 
 export const HomeScreen: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [radius, setRadius] = useState<number>(5);
+  const [useWheel, setUseWheel] = useState<boolean>(false);
+
+  const { location, errorMsg, refreshLocation } = useCurrentLocation();
+  const { peers, loading: peersLoading, refetch: refetchPeers } = useNearbyPeers({
+    radiusKm: radius,
+    userLocation: location ? { latitude: location.coords.latitude, longitude: location.coords.longitude } : null,
+  });
 
   const colors = isDarkMode ? {
     bg: theme.colors.background,
@@ -41,27 +55,59 @@ export const HomeScreen: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => { fetchProfiles(); }, [fetchProfiles]);
+  useEffect(() => {
+    fetchProfiles();
+    refreshLocation();
+  }, [fetchProfiles, refreshLocation]);
 
-  const renderItem = ({ item }: { item: ProfileRow }) => (
-    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <View style={styles.cardInfo}>
-        <Text style={[styles.nameText, { color: colors.text }]}>{item.full_name || 'Anonymous'}</Text>
-        <Text style={[styles.usernameText, { color: colors.secondaryText }]}>@{item.username}</Text>
-      </View>
-      <TouchableOpacity
-        style={styles.chatButton}
-        onPress={() => { if (openChat) openChat(item.id, item.full_name || 'Chat'); }}
-      >
-        <Text style={styles.chatButtonText}>Chat</Text>
-      </TouchableOpacity>
-    </View>
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([fetchProfiles(), refreshLocation(), refetchPeers()]);
+    setRefreshing(false);
+  };
+
+  const renderPeerItem = ({ item }: { item: any }) => (
+    <NearbyPeerCard
+      peer={item}
+      onPress={() => {
+        if (openChat) openChat(item.id, item.full_name || 'Chat');
+      }}
+    />
   );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
+      <ProximityHeader
+        title="Proximity"
+        subtitle={location ? `Radius: ${radius} km` : 'Locating...'}
+        onRefresh={onRefresh}
+      />
+
+      <View style={[styles.filterContainer, { borderBottomColor: colors.border }]}>
+        <View style={styles.radiusSelectorToggle}>
+          <TouchableOpacity
+            style={[styles.toggleBtn, !useWheel && styles.toggleBtnActive]}
+            onPress={() => setUseWheel(false)}
+          >
+            <Text style={[styles.toggleBtnText, !useWheel && styles.toggleBtnTextActive]}>Slider</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.toggleBtn, useWheel && styles.toggleBtnActive]}
+            onPress={() => setUseWheel(true)}
+          >
+            <Text style={[styles.toggleBtnText, useWheel && styles.toggleBtnTextActive]}>Wheel</Text>
+          </TouchableOpacity>
+        </View>
+
+        {useWheel ? (
+          <RadiusWheel selectedRadius={radius} onRadiusChange={setRadius} />
+        ) : (
+          <RadiusSlider radius={radius} onRadiusChange={setRadius} />
+        )}
+      </View>
+
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Proximity</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Nearby Peers</Text>
         <View style={styles.themeToggle}>
           <Text style={[styles.themeLabel, { color: colors.secondaryText }]}>
             {isDarkMode ? '🌙' : '☀️'}
@@ -75,20 +121,22 @@ export const HomeScreen: React.FC = () => {
         </View>
       </View>
 
-      {loading ? (
+      {loading || peersLoading ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.colors.primary.main} />
         </View>
       ) : (
         <FlatList
-          data={profiles}
+          data={peers.length > 0 ? peers : profiles.map(p => ({ ...p, distance: null }))}
           keyExtractor={(item) => item.id}
-          renderItem={renderItem}
+          renderItem={renderPeerItem}
           contentContainerStyle={styles.list}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchProfiles(); }} tintColor={theme.colors.primary.main} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary.main} />}
           ListEmptyComponent={
             <View style={styles.centered}>
-              <Text style={[styles.emptyText, { color: colors.secondaryText }]}>No users found nearby.</Text>
+              <Text style={[styles.emptyText, { color: colors.secondaryText }]}>
+                {errorMsg || 'No users found nearby within this radius.'}
+              </Text>
             </View>
           }
         />
@@ -99,17 +147,17 @@ export const HomeScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  filterContainer: { padding: 12, borderBottomWidth: 1 },
+  radiusSelectorToggle: { flexDirection: 'row', justifyContent: 'center', marginBottom: 8, gap: 8 },
+  toggleBtn: { paddingVertical: 4, paddingHorizontal: 12, borderRadius: 16, backgroundColor: theme.colors.surfaceLight },
+  toggleBtnActive: { backgroundColor: theme.colors.primary.main },
+  toggleBtnText: { color: theme.colors.text.secondary, fontSize: 12, fontWeight: '600' },
+  toggleBtnTextActive: { color: '#FFFFFF' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1 },
-  headerTitle: { fontSize: 20, fontWeight: '700' },
+  headerTitle: { fontSize: 18, fontWeight: '700' },
   themeToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   themeLabel: { fontSize: 18 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   list: { padding: 16, gap: 12 },
-  card: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 12, borderWidth: 1 },
-  cardInfo: { flex: 1 },
-  nameText: { fontSize: 16, fontWeight: '600' },
-  usernameText: { fontSize: 13, marginTop: 2 },
-  chatButton: { backgroundColor: theme.colors.primary.main, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8 },
-  chatButtonText: { color: '#FFFFFF', fontWeight: '600', fontSize: 14 },
   emptyText: { fontSize: 16, textAlign: 'center' },
 });
