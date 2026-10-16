@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, FlatList, ActivityIndicator, Text } from 'react-native';
+import { useCurrentLocation } from '../../hooks/location/useCurrentLocation';
 import { useNearbyPeers } from '../../hooks/proximity/useNearbyPeers';
-import { ProximityHeader } from '../../components/proximity/ProximityHeader';
 import { NearbyPeerCard } from '../../components/proximity/NearbyPeerCard';
+import { ProximityHeader } from '../../components/proximity/ProximityHeader';
+import { RadiusSlider } from '../../components/proximity/RadiusSlider';
 import { EmptyState } from '../../components/common/EmptyState';
 import { theme } from '../../constants/theme';
 
 export default function HomeScreen() {
-  const { peers, isLoading, isRefreshing, radius, setRadius, lastUpdated, refreshPeers, errorMsg } = useNearbyPeers();
-  const [selectedPeer, setSelectedPeer] = useState<any>(null);
+  const { location, isLoading: locationLoading } = useCurrentLocation();
+  const { peers, selectedRadius, isLoading, isRefreshing, error, lastFetchedAt, setRadius, refresh } = useNearbyPeers(location);
 
-  if (isLoading && !isRefreshing) {
+  if (locationLoading || isLoading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={theme.colors.primary.main} />
@@ -20,40 +22,44 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <ProximityHeader 
-        lastUpdated={lastUpdated}
-      />
+      <ProximityHeader lastUpdated={lastFetchedAt} />
       
-      {errorMsg ? (
-        <View style={styles.errorBanner}>
-          <Text style={styles.errorText}>{errorMsg}</Text>
-        </View>
-      ) : null}
+      <View style={styles.filterContainer}>
+        <Text style={styles.filterText}>Radius: {selectedRadius} km</Text>
+        <RadiusSlider value={selectedRadius} onValueChange={setRadius} />
+      </View>
 
-      <FlatList
-        data={peers}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <NearbyPeerCard
-            peer={item}
-            onPress={() => setSelectedPeer(item)}
-            onWave={() => {}}
-          />
-        )}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={refreshPeers} tintColor={theme.colors.primary.main} />
-        }
-        ListEmptyComponent={
-          <EmptyState
-            icon="radio-outline"
-            title="No one nearby"
-            description="Expand your radius filter to find more peers around you."
-            actionLabel="Refresh Feed"
-            onAction={refreshPeers}
-          />
-        }
-      />
+      {error ? (
+        <EmptyState 
+          icon="alert-circle-outline" 
+          title="Error Loading Peers" 
+          description={error.message || 'Something went wrong.'}
+          actionLabel="Try Again"
+          onAction={refresh}
+        />
+      ) : peers.length === 0 ? (
+        <EmptyState 
+          icon="people-outline" 
+          title="No Peers Nearby" 
+          description="Try expanding your radius to find people around you."
+          actionLabel="Refresh"
+          onAction={refresh}
+        />
+      ) : (
+        <FlatList
+          data={peers}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <NearbyPeerCard 
+              peer={item} 
+              onPress={() => {}} 
+            />
+          )}
+          contentContainerStyle={styles.list}
+          refreshing={isRefreshing}
+          onRefresh={refresh}
+        />
+      )}
     </View>
   );
 }
@@ -69,22 +75,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: theme.colors.background,
   },
-  listContent: {
+  filterContainer: {
     padding: 16,
-    paddingBottom: 32,
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
   },
-  errorBanner: {
-    backgroundColor: theme.colors.error + '22',
-    padding: 12,
-    marginHorizontal: 16,
-    marginTop: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.error,
-  },
-  errorText: {
-    color: theme.colors.error,
+  filterText: {
+    color: theme.colors.text.primary,
     fontSize: 14,
-    textAlign: 'center',
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  list: {
+    padding: 16,
   },
 });
