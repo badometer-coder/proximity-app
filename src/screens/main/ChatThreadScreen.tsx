@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
-import { ChatMessage } from '../../types';
 import { theme } from '../../constants/theme';
-import { Ionicons } from '@expo/vector-icons';
+import { ChatMessage } from '../../types';
 
 interface ChatThreadScreenProps {
   userId: string;
@@ -13,39 +12,37 @@ interface ChatThreadScreenProps {
 }
 
 export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, userName, myId, onBack }) => {
-  const [input, setInput] = useState('');
+  const [inputText, setInputText] = useState('');
   const { messages, isLoading, sendMessage } = useChatMessages(userId, userName);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
-    const text = input;
-    setInput('');
-    await sendMessage(text);
+    if (!inputText.trim()) return;
+    await sendMessage(inputText);
+    setInputText('');
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={theme.colors.text.primary} />
+        <TouchableOpacity onPress={onBack}>
+          <Text style={styles.backButton}>Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{userName}</Text>
+        <View style={{ width: 40 }} />
       </View>
 
       <FlatList
         data={messages}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.messageList}
+        keyExtractor={(item: ChatMessage) => item.id}
         renderItem={({ item }) => {
           const isMe = item.sender_id === myId;
           return (
             <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
-              <Text style={[styles.messageText, isMe ? styles.myMessageText : styles.theirMessageText]}>
-                {item.message}
-              </Text>
+              <Text style={styles.messageText}>{item.message}</Text>
             </View>
           );
         }}
+        contentContainerStyle={styles.messageList}
       />
 
       <View style={styles.inputContainer}>
@@ -53,11 +50,11 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
           style={styles.input}
           placeholder="Type a message..."
           placeholderTextColor={theme.colors.text.secondary}
-          value={input}
-          onChangeText={setInput}
+          value={inputText}
+          onChangeText={setInputText}
         />
         <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-          <Ionicons name="send" size={20} color="#FFFFFF" />
+          <Text style={styles.sendButtonText}>Send</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -65,18 +62,78 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
-  backButton: { marginRight: 16 },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: theme.colors.text.primary },
-  messageList: { padding: 16 },
-  messageBubble: { maxWidth: '75%', padding: 12, borderRadius: 12, marginBottom: 8 },
-  myMessage: { backgroundColor: theme.colors.primary.main, alignSelf: 'flex-end' },
-  theirMessage: { backgroundColor: theme.colors.surface, alignSelf: 'flex-start', borderWidth: 1, borderColor: theme.colors.border },
-  messageText: { fontSize: 15 },
-  myMessageText: { color: '#FFFFFF' },
-  theirMessageText: { color: theme.colors.text.primary },
-  inputContainer: { flexDirection: 'row', padding: 12, borderTopWidth: 1, borderTopColor: theme.colors.border, backgroundColor: theme.colors.surface },
-  input: { flex: 1, backgroundColor: theme.colors.background, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, color: theme.colors.text.primary, fontSize: 15, marginRight: 8 },
-  sendButton: { justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.primary.main, width: 40, height: 40, borderRadius: 20 },
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 50,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+  },
+  backButton: {
+    color: theme.colors.primary.main,
+    fontSize: 16,
+  },
+  headerTitle: {
+    color: theme.colors.text.primary,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  messageList: {
+    padding: 16,
+  },
+  messageBubble: {
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    maxWidth: '80%',
+  },
+  myMessage: {
+    backgroundColor: theme.colors.primary.main,
+    alignSelf: 'flex-end',
+  },
+  theirMessage: {
+    backgroundColor: theme.colors.surface,
+    alignSelf: 'flex-start',
+  },
+  messageText: {
+    color: theme.colors.text.primary,
+    fontSize: 15,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+  },
+  input: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: theme.colors.text.primary,
+    marginRight: 8,
+  },
+  sendButton: {
+    backgroundColor: theme.colors.primary.main,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  sendButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
 });
