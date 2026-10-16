@@ -5,7 +5,6 @@ import { Avatar } from '../common/Avatar';
 import { SignalIndicator } from './SignalIndicator';
 import { DistanceBadge } from './DistanceBadge';
 import { theme } from '../../constants/theme';
-import { getPresenceColor, getPresenceStatus } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -13,33 +12,31 @@ interface NearbyPeerCardProps {
 }
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
-  const presence = getPresenceStatus(peer.last_active_at);
-  const presenceColor = getPresenceColor(presence);
-
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
-          <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
-        </View>
-
+        <Avatar uri={peer.avatar_url} name={peer.full_name} size={50} />
         <View style={styles.info}>
           <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
+            <Text style={styles.name}>{peer.full_name}</Text>
             <Text style={styles.age}>, {peer.age}</Text>
           </View>
-          <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
+          <Text style={styles.username}>@{peer.username}</Text>
         </View>
-
         <SignalIndicator strength={peer.signal_strength} />
       </View>
-
+      
       <View style={styles.footer}>
         <DistanceBadge distance={peer.formatted_distance} />
-        <Text style={styles.statusText}>
-          {presence === 'online' ? 'Active now' : `Active ${presence}`}
-        </Text>
+        <View style={styles.statusContainer}>
+          <View 
+            style={[
+              styles.statusDot, 
+              { backgroundColor: peer.presence_status === 'online' ? theme.colors.success : theme.colors.text.tertiary }
+            ]} 
+          />
+          <Text style={styles.statusText}>{peer.presence_status}</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -50,7 +47,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -58,23 +55,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  avatarContainer: {
-    position: 'relative',
-    marginRight: theme.spacing.md,
-  },
-  presenceDot: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: theme.colors.surface,
-  },
   info: {
     flex: 1,
-    justifyContent: 'center',
+    marginLeft: theme.spacing.md,
   },
   nameRow: {
     flexDirection: 'row',
@@ -90,8 +73,8 @@ const styles = StyleSheet.create({
     color: theme.colors.text.secondary,
   },
   username: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.tertiary,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text.secondary,
     marginTop: 2,
   },
   footer: {
@@ -103,8 +86,19 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
   },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
   statusText: {
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.secondary,
+    textTransform: 'capitalize',
   },
 });
