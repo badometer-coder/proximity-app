@@ -1,105 +1,212 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+import { AuthProvider } from './src/context/AuthContext';
+import { ThemeProvider } from './src/context/ThemeContext';
 import { useAuth } from './src/hooks/auth/useAuth';
 import { LoginScreen } from './src/screens/auth/LoginScreen';
 import { ProfileSetupScreen } from './src/screens/auth/ProfileSetupScreen';
-import { HomeScreen } from './src/screens/main/HomeScreen';
-import { ChatThreadScreen } from './src/screens/main/ChatThreadScreen';
+import HomeScreen from './src/screens/main/HomeScreen';
+import ProximityFeedScreen from './src/screens/main/ProximityFeedScreen';
 import { supabase } from './src/config/supabase';
-import { ProfileRow } from './src/types/database';
 import { theme } from './src/constants/theme';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ProfileSetupTyped = ProfileSetupScreen as React.ComponentType<any>;
+const Tab = createBottomTabNavigator();
 
-export let openChat: ((id: string, name: string) => void) | null = null;
+function ProfileSettingsScreen() {
+  const { session, signOut } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-export default function App() {
-  const { session, loading: authLoading } = useAuth();
-  const [profile, setProfile] = useState<ProfileRow | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
-  const [myId, setMyId] = useState<string | null>(null);
-  
-  const [screen, setScreen] = useState<'auth' | 'setup' | 'feed' | 'chat'>('auth');
-  const [chatTarget, setChatTarget] = useState<{ id: string; name: string } | null>(null);
-
-  // Grab your ID instantly when you log in
   useEffect(() => {
-    if (session?.user?.id) setMyId(session.user.id);
-    else setMyId(null);
-  }, [session]);
-
-  const fetchProfile = useCallback(async () => {
-    if (session?.user) {
-      setProfileLoading(true);
-      const { data } = await (supabase as any).from('profiles').select('*').eq('id', session.user.id).single();
-      setProfile(data);
-      setProfileLoading(false);
-    } else {
-      setProfile(null);
-      setProfileLoading(false);
+    async function fetchProfile() {
+      if (!session?.user?.id) return;
+      const { data } = await (supabase as any)
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+      if (data) setProfile(data);
+      setLoading(false);
     }
+    fetchProfile();
   }, [session]);
 
-  useEffect(() => {
-    if (session) setScreen('feed');
-    else setScreen('auth');
-  }, [session]);
-
-  useEffect(() => { fetchProfile(); }, [fetchProfile]);
-
-  openChat = (id: string, name: string) => {
-    setChatTarget({ id, name });
-    setScreen('chat');
-  };
-
-  const handleBackToFeed = () => setScreen('feed');
-
-  if (authLoading || profileLoading) {
+  if (loading) {
     return (
-      <SafeAreaProvider>
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={theme.colors.primary.main} />
-        </View>
-      </SafeAreaProvider>
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={theme.colors.primary.main} />
+      </View>
     );
   }
 
   return (
-    <SafeAreaProvider>
-      <View style={styles.container}>
-        {/* Keep all screens alive, just hide the ones we aren't using! */}
-        <View style={[styles.screen, screen !== 'auth' && styles.hidden]}>
-          <LoginScreen />
-        </View>
+    <View style={styles.profileContainer}>
+      <Text style={styles.title}>Profile & Settings</Text>
+      <View style={styles.card}>
+        <Text style={styles.label}>Full Name</Text>
+        <Text style={styles.value}>{profile?.full_name || 'Not set'}</Text>
 
-        <View style={[styles.screen, screen !== 'setup' && styles.hidden]}>
-          <ProfileSetupTyped onComplete={fetchProfile} />
-        </View>
+        <Text style={styles.label}>Username</Text>
+        <Text style={styles.value}>@{profile?.username || 'not_set'}</Text>
 
-        <View style={[styles.screen, screen !== 'feed' && styles.hidden]}>
-          <HomeScreen />
-        </View>
+        <Text style={styles.label}>Email</Text>
+        <Text style={styles.value}>{session?.user?.email}</Text>
 
-        <View style={[styles.screen, screen !== 'chat' && styles.hidden]}>
-          {chatTarget && (
-            <ChatThreadScreen 
-              userId={chatTarget.id} 
-              userName={chatTarget.name} 
-              myId={myId} 
-              onBack={handleBackToFeed} 
-            />
-          )}
-        </View>
+        <Text style={styles.label}>Age</Text>
+        <Text style={styles.value}>{profile?.age || 'Not set'}</Text>
       </View>
-    </SafeAreaProvider>
+
+      <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
+        <Text style={styles.signOutText}>Sign Out</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function MainTabNavigator() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: theme.colors.surface,
+          borderTopColor: theme.colors.border,
+        },
+        tabBarActiveTintColor: theme.colors.primary.main,
+        tabBarInactiveTintColor: theme.colors.text.secondary,
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap = 'home';
+
+          if (route.name === 'Home') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Proximity Feed') {
+            iconName = focused ? 'radio' : 'radio-outline';
+          } else if (route.name === 'Profile') {
+            iconName = focused ? 'person' : 'person-outline';
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Proximity Feed" component={ProximityFeedScreen} />
+      <Tab.Screen name="Profile" component={ProfileSettingsScreen} />
+    </Tab.Navigator>
+  );
+}
+
+function RootNavigator() {
+  const { session, isLoading } = useAuth();
+  const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
+  const [checkingProfile, setCheckingProfile] = useState(false);
+
+  useEffect(() => {
+    async function checkProfile() {
+      if (!session?.user?.id) {
+        setProfileComplete(null);
+        return;
+      }
+      setCheckingProfile(true);
+      const { data } = await (supabase as any)
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (data && data.username) {
+        setProfileComplete(true);
+      } else {
+        setProfileComplete(false);
+      }
+      setCheckingProfile(false);
+    }
+    checkProfile();
+  }, [session]);
+
+  if (isLoading || checkingProfile) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={theme.colors.primary.main} />
+      </View>
+    );
+  }
+
+  if (!session) {
+    return <LoginScreen />;
+  }
+
+  if (profileComplete === false) {
+    return <ProfileSetupScreen onComplete={() => setProfileComplete(true)} />;
+  }
+
+  return (
+    <NavigationContainer>
+      <MainTabNavigator />
+    </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <RootNavigator />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background },
-  screen: { flex: 1 },
-  hidden: { display: 'none' },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.colors.background,
+  },
+  profileContainer: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    padding: 24,
+    paddingTop: 64,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: theme.colors.text.primary,
+    marginBottom: 24,
+  },
+  card: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: 24,
+  },
+  label: {
+    fontSize: 13,
+    color: theme.colors.text.secondary,
+    marginBottom: 4,
+    marginTop: 12,
+  },
+  value: {
+    fontSize: 16,
+    color: theme.colors.text.primary,
+    fontWeight: '500',
+  },
+  signOutButton: {
+    backgroundColor: theme.colors.error,
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  signOutText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
