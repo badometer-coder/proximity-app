@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
 import { ChatMessage } from '../../types';
 import { theme } from '../../constants/theme';
+import { formatTime } from '../../lib/utils';
 
 interface ChatThreadScreenProps {
   userId: string;
@@ -22,31 +24,51 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
-    await sendMessage(inputText);
+    const text = inputText;
     setInputText('');
+    try {
+      await sendMessage(text);
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
+  };
+
+  const renderMessageItem = ({ item }: { item: ChatMessage }) => {
+    const isMe = item.sender_id === myId;
+    return (
+      <View style={[styles.messageRow, isMe ? styles.rowRight : styles.rowLeft]}>
+        <View style={[styles.bubble, isMe ? styles.bubbleMe : styles.bubbleOther]}>
+          <Text style={[styles.messageText, isMe ? styles.textMe : styles.textOther]}>
+            {item.message}
+          </Text>
+          <Text style={[styles.timeText, isMe ? styles.timeMe : styles.timeOther]}>
+            {formatTime(item.sent_at)}
+          </Text>
+        </View>
+      </View>
+    );
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack}>
-          <Text style={styles.backButton}>Back</Text>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={theme.colors.text.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{userName}</Text>
+        <View style={{ width: 24 }} />
       </View>
 
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => {
-          const isMe = item.sender_id === myId;
-          return (
-            <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
-              <Text style={styles.messageText}>{item.message}</Text>
-            </View>
-          );
-        }}
+        renderItem={renderMessageItem}
         contentContainerStyle={styles.messageList}
+        inverted={false}
       />
 
       <View style={styles.inputContainer}>
@@ -56,12 +78,17 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
           placeholderTextColor={theme.colors.text.secondary}
           value={inputText}
           onChangeText={setInputText}
+          multiline
         />
-        <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-          <Text style={styles.sendButtonText}>Send</Text>
+        <TouchableOpacity 
+          style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]} 
+          onPress={handleSend}
+          disabled={!inputText.trim()}
+        >
+          <Ionicons name="send" size={18} color="#FFF" />
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -73,44 +100,75 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
   },
   backButton: {
-    color: theme.colors.primary.main,
-    fontSize: 16,
-    marginRight: 16,
+    padding: 4,
   },
   headerTitle: {
-    color: theme.colors.text.primary,
     fontSize: 18,
     fontWeight: 'bold',
+    color: theme.colors.text.primary,
   },
   messageList: {
     padding: 16,
+    flexGrow: 1,
+    justifyContent: 'flex-end',
   },
-  messageBubble: {
+  messageRow: {
+    marginBottom: 12,
+    flexDirection: 'row',
+  },
+  rowLeft: {
+    justifyContent: 'flex-start',
+  },
+  rowRight: {
+    justifyContent: 'flex-end',
+  },
+  bubble: {
+    maxWidth: '75%',
     padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-    maxWidth: '80%',
+    borderRadius: 16,
   },
-  myMessage: {
+  bubbleMe: {
     backgroundColor: theme.colors.primary.main,
-    alignSelf: 'flex-end',
+    borderBottomRightRadius: 4,
   },
-  theirMessage: {
+  bubbleOther: {
     backgroundColor: theme.colors.surface,
-    alignSelf: 'flex-start',
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   messageText: {
-    color: theme.colors.text.primary,
     fontSize: 15,
+    lineHeight: 20,
+  },
+  textMe: {
+    color: '#FFFFFF',
+  },
+  textOther: {
+    color: theme.colors.text.primary,
+  },
+  timeText: {
+    fontSize: 10,
+    marginTop: 4,
+    alignSelf: 'flex-end',
+  },
+  timeMe: {
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  timeOther: {
+    color: theme.colors.text.secondary,
   },
   inputContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
     padding: 12,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
@@ -121,21 +179,23 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 15,
     color: theme.colors.text.primary,
-    marginRight: 8,
+    maxHeight: 100,
   },
   sendButton: {
     backgroundColor: theme.colors.primary.main,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    marginLeft: 8,
   },
-  sendButtonText: {
-    color: '#FFF',
-    fontWeight: '600',
+  sendButtonDisabled: {
+    backgroundColor: theme.colors.border,
   },
 });
