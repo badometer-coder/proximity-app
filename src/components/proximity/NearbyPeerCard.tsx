@@ -5,7 +5,6 @@ import { Avatar } from '../common/Avatar';
 import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
 import { theme } from '../../constants/theme';
-import { getPresenceColor } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -13,28 +12,29 @@ interface NearbyPeerCardProps {
 }
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
-  const presenceColor = getPresenceColor(peer.presence_status);
+  const presenceDotStyle = [
+    styles.presenceDot,
+    peer.presence_status === 'online' && styles.onlineDot,
+    peer.presence_status === 'recently' && styles.recentlyDot,
+    peer.presence_status === 'offline' && styles.offlineDot,
+  ];
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.avatarContainer}>
-        <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
-        <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
+        <Avatar uri={peer.avatar_url} name={peer.full_name} size={50} />
+        <View style={presenceDotStyle} />
       </View>
 
       <View style={styles.infoContainer}>
         <View style={styles.headerRow}>
-          <Text style={styles.name} numberOfLines={1}>
-            {peer.full_name || peer.username}
-          </Text>
-          <Text style={styles.age}>{peer.age}</Text>
+          <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
+          <Text style={styles.age}>, {peer.age}</Text>
         </View>
 
-        <Text style={styles.username} numberOfLines={1}>
-          @{peer.username}
-        </Text>
+        <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
 
-        <View style={styles.footerRow}>
+        <View style={styles.metaRow}>
           <DistanceBadge distance={peer.formatted_distance} />
           <SignalIndicator strength={peer.signal_strength} />
         </View>
@@ -44,15 +44,15 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
+  card: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    alignItems: 'center',
   },
   avatarContainer: {
     position: 'relative',
@@ -60,43 +60,48 @@ const styles = StyleSheet.create({
   },
   presenceDot: {
     position: 'absolute',
-    bottom: 2,
-    right: 2,
+    bottom: 0,
+    right: 0,
     width: 12,
     height: 12,
     borderRadius: 6,
     borderWidth: 2,
     borderColor: theme.colors.surface,
   },
+  onlineDot: {
+    backgroundColor: theme.colors.success,
+  },
+  recentlyDot: {
+    backgroundColor: theme.colors.warning,
+  },
+  offlineDot: {
+    backgroundColor: theme.colors.text.tertiary,
+  },
   infoContainer: {
     flex: 1,
   },
   headerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 2,
+    alignItems: 'baseline',
   },
   name: {
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
-    flex: 1,
-    marginRight: theme.spacing.xs,
   },
   age: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
-    fontWeight: theme.typography.fontWeight.medium,
   },
   username: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
   },
-  footerRow: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: theme.spacing.sm,
+    marginTop: theme.spacing.xs,
   },
 });
