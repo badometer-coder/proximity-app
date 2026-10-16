@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
-import { ChatMessage } from '../../types';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
+import { ChatMessage } from '../../types';
 import { theme } from '../../constants/theme';
+import { formatTime } from '../../lib/utils';
 import { Ionicons } from '@expo/vector-icons';
 
 interface ChatThreadScreenProps {
@@ -12,12 +13,7 @@ interface ChatThreadScreenProps {
   onBack: () => void;
 }
 
-export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
-  userId,
-  userName,
-  myId,
-  onBack,
-}) => {
+export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, userName, myId, onBack }) => {
   const [inputText, setInputText] = useState('');
   const { messages, isLoading, sendMessage } = useChatMessages(userId, userName);
 
@@ -32,6 +28,7 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
     <KeyboardAvoidingView 
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
@@ -51,6 +48,9 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
               <Text style={[styles.messageText, isMe ? styles.myMessageText : styles.theirMessageText]}>
                 {item.message}
               </Text>
+              <Text style={[styles.timestamp, isMe ? styles.myTimestamp : styles.theirTimestamp]}>
+                {formatTime(item.sent_at)}
+              </Text>
             </View>
           );
         }}
@@ -60,7 +60,7 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
         <TextInput
           style={styles.input}
           placeholder="Type a message..."
-          placeholderTextColor={theme.colors.text.secondary}
+          placeholderTextColor={theme.colors.text.tertiary}
           value={inputText}
           onChangeText={setInputText}
         />
@@ -81,11 +81,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 50,
+    paddingTop: 16,
     paddingBottom: 16,
-    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
   },
   backButton: {
     marginRight: 12,
@@ -101,16 +101,18 @@ const styles = StyleSheet.create({
   messageBubble: {
     maxWidth: '75%',
     padding: 12,
-    borderRadius: 12,
-    marginBottom: 8,
+    borderRadius: 16,
+    marginBottom: 12,
   },
   myMessage: {
     backgroundColor: theme.colors.primary.main,
     alignSelf: 'flex-end',
+    borderBottomRightRadius: 4,
   },
   theirMessage: {
     backgroundColor: theme.colors.surface,
     alignSelf: 'flex-start',
+    borderBottomLeftRadius: 4,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -122,6 +124,17 @@ const styles = StyleSheet.create({
   },
   theirMessageText: {
     color: theme.colors.text.primary,
+  },
+  timestamp: {
+    fontSize: 10,
+    marginTop: 4,
+    alignSelf: 'flex-end',
+  },
+  myTimestamp: {
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  theirTimestamp: {
+    color: theme.colors.text.tertiary,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -141,7 +154,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     color: theme.colors.text.primary,
     fontSize: 15,
-    marginRight: 8,
+    maxHeight: 100,
   },
   sendButton: {
     backgroundColor: theme.colors.primary.main,
@@ -150,5 +163,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
+    marginLeft: 8,
   },
 });
