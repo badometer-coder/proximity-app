@@ -5,7 +5,6 @@ import { Avatar } from '../common/Avatar';
 import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
 import { theme } from '../../constants/theme';
-import { getPresenceColor, formatRelativeTime } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -13,97 +12,96 @@ interface NearbyPeerCardProps {
 }
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
-  const presenceColor = getPresenceColor(peer.presence_status);
-
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-      <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
-          <View style={[styles.presenceDot, { backgroundColor: presenceColor }]} />
-        </View>
-
-        <View style={styles.info}>
-          <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
-            <Text style={styles.age}>, {peer.age}</Text>
-          </View>
-          <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
-          <Text style={styles.lastActive}>Active {formatRelativeTime(peer.last_active_at)}</Text>
-        </View>
-
-        <View style={styles.metaContainer}>
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
+      <Avatar
+        uri={peer.avatar_url}
+        name={peer.full_name || peer.username}
+        size={50}
+      />
+      <View style={styles.infoContainer}>
+        <View style={styles.headerRow}>
+          <Text style={styles.name} numberOfLines={1}>
+            {peer.full_name || peer.username}
+            {peer.age ? <Text style={styles.age}>, {peer.age}</Text> : null}
+          </Text>
           <DistanceBadge distance={peer.formatted_distance} />
-          <View style={styles.signalWrapper}>
-            <SignalIndicator strength={peer.signal_strength} />
-          </View>
+        </View>
+        <Text style={styles.username} numberOfLines={1}>
+          @{peer.username}
+        </Text>
+        <View style={styles.footerRow}>
+          <SignalIndicator strength={peer.signal_strength} />
+          <View style={[styles.presenceDot, { backgroundColor: getPresenceColor(peer.presence_status) }]} />
+          <Text style={styles.presenceText}>{peer.presence_status}</Text>
         </View>
       </View>
     </TouchableOpacity>
   );
 };
 
+const getPresenceColor = (status: string) => {
+  switch (status) {
+    case 'online':
+      return theme.colors.success;
+    case 'recently':
+      return theme.colors.warning;
+    default:
+      return theme.colors.text.tertiary;
+  }
+};
+
 const styles = StyleSheet.create({
-  card: {
+  container: {
+    flexDirection: 'row',
     backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
-  },
-  header: {
-    flexDirection: 'row',
     alignItems: 'center',
   },
-  avatarContainer: {
-    position: 'relative',
-    marginRight: 14,
-  },
-  presenceDot: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: theme.colors.surface,
-  },
-  info: {
+  infoContainer: {
     flex: 1,
-    justifyContent: 'center',
+    marginLeft: theme.spacing.md,
   },
-  nameRow: {
+  headerRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
   },
   name: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
+    flex: 1,
+    marginRight: theme.spacing.sm,
   },
   age: {
-    fontSize: 15,
-    fontWeight: '400',
+    fontWeight: theme.typography.fontWeight.regular,
     color: theme.colors.text.secondary,
   },
   username: {
-    fontSize: 13,
-    color: theme.colors.primary.main,
-    marginTop: 2,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.xs,
   },
-  lastActive: {
-    fontSize: 11,
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  presenceDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginLeft: theme.spacing.sm,
+    marginRight: 4,
+  },
+  presenceText: {
+    fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.tertiary,
-    marginTop: 4,
-  },
-  metaContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    marginLeft: 8,
-  },
-  signalWrapper: {
-    marginTop: 6,
+    textTransform: 'capitalize',
   },
 });
