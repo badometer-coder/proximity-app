@@ -15,7 +15,9 @@ export const ProximityFeedScreen = ({ navigation }: { navigation?: any }) => {
 
   // 1. Ask for permission if undetermined
   useEffect(() => {
-    if (permissionStatus === 'undetermined') requestPermission();
+    if (permissionStatus === 'undetermined') {
+      requestPermission();
+    }
   }, [permissionStatus, requestPermission]);
 
   // 2. Handle permission denied error
