@@ -4,8 +4,10 @@ import { FormattedNearbyPeer } from '../../types';
 import { Avatar } from '../common/Avatar';
 import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
-import { getPresenceColor, getSignalBars } from '../../lib/utils';
 import { theme } from '../../constants/theme';
+import { getPresenceColor, getPresenceStatus } from '../../lib/utils';
+import { getSignalBars } from '../../lib/utils';
+import { Ionicons } from '@expo/vector-icons';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -13,8 +15,9 @@ interface NearbyPeerCardProps {
 }
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
-  const presenceColor = getPresenceColor(peer.presence_status);
-  const signalBars = getSignalBars(peer.signal_strength);
+  const presenceStatus = getPresenceStatus(peer.last_active_at);
+  const presenceColor = getPresenceColor(presenceStatus);
+  const signalBarsCount = getSignalBars(peer.signal_strength);
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
@@ -36,10 +39,13 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
         </Text>
 
         <View style={styles.footerRow}>
-          <SignalIndicator bars={signalBars} />
-          <Text style={styles.presenceText}>
-            {peer.presence_status === 'online' ? 'Online now' : `Active ${peer.presence_status}`}
-          </Text>
+          <SignalIndicator strength={peer.signal_strength} />
+          {peer.is_ble_discoverable && (
+            <View style={styles.bleBadge}>
+              <Ionicons name="bluetooth" size={12} color={theme.colors.info} />
+              <Text style={styles.bleText}>BLE</Text>
+            </View>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -48,14 +54,14 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    alignItems: 'center',
   },
   avatarContainer: {
     position: 'relative',
@@ -65,9 +71,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 2,
     right: 2,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     borderWidth: 2,
     borderColor: theme.colors.surface,
   },
@@ -82,7 +88,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: theme.typography.fontSize.md,
-    fontWeight: theme.typography.fontWeight.semibold as any,
+    fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
     flex: 1,
     marginRight: theme.spacing.sm,
@@ -90,15 +96,25 @@ const styles = StyleSheet.create({
   username: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
   },
   footerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  presenceText: {
+  bleBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: theme.borderRadius.sm,
+  },
+  bleText: {
     fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.tertiary,
+    color: theme.colors.info,
+    fontWeight: theme.typography.fontWeight.medium,
+    marginLeft: 2,
   },
 });
