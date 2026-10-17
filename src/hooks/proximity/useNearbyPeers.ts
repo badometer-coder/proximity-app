@@ -33,7 +33,7 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
         return;
       }
 
-      const { data, error: rpcError } = await supabase.rpc('get_nearby_peers', {
+      const { data, error: rpcError } = await supabase.rpc('get_nearby_peers' as any, {
         user_id: user.id,
         radius_meters: selectedRadius,
         lat: currentLocation.latitude,
