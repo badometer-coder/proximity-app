@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { theme } from '../../constants/theme';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
 import { ChatMessage } from '../../types';
-import { theme } from '../../constants/theme';
 
 interface ChatThreadScreenProps {
   userId: string;
@@ -26,15 +26,6 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
     setInputText('');
   };
 
-  const renderItem = ({ item }: { item: ChatMessage }) => {
-    const isMe = item.sender_id === myId;
-    return (
-      <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
-        <Text style={styles.messageText}>{item.message}</Text>
-      </View>
-    );
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -48,8 +39,17 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id}
-        renderItem={renderItem}
+        renderItem={({ item }) => {
+          const isMe = item.sender_id === myId;
+          return (
+            <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
+              <Text style={styles.messageText}>{item.message}</Text>
+              <Text style={styles.timestamp}>{new Date(item.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+            </View>
+          );
+        }}
         contentContainerStyle={styles.messageList}
+        inverted={false}
       />
 
       <View style={styles.inputContainer}>
@@ -97,10 +97,10 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   messageBubble: {
-    padding: 12,
-    borderRadius: 8,
-    marginVertical: 4,
     maxWidth: '80%',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 8,
   },
   myMessage: {
     backgroundColor: theme.colors.primary.main,
@@ -109,10 +109,18 @@ const styles = StyleSheet.create({
   theirMessage: {
     backgroundColor: theme.colors.surface,
     alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   messageText: {
-    color: theme.colors.text.primary,
+    color: '#FFF',
     fontSize: 15,
+  },
+  timestamp: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 10,
+    marginTop: 4,
+    textAlign: 'right',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -120,24 +128,27 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
+    alignItems: 'center',
   },
   input: {
     flex: 1,
     backgroundColor: theme.colors.background,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    color: theme.colors.text.primary,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    color: '#FFF',
+    fontSize: 15,
     marginRight: 8,
   },
   sendButton: {
     backgroundColor: theme.colors.primary.main,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    borderRadius: 8,
   },
   sendButtonText: {
     color: '#FFF',
