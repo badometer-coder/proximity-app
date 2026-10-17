@@ -5,7 +5,7 @@ import { Avatar } from '../common/Avatar';
 import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
 import { theme } from '../../constants/theme';
-import { Ionicons } from '@expo/vector-icons';
+import { formatRelativeTime } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -19,19 +19,17 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
         <Avatar uri={peer.avatar_url} name={peer.full_name} size={50} />
         <View style={styles.info}>
           <View style={styles.nameRow}>
-            <Text style={styles.name}>{peer.full_name}</Text>
-            <Text style={styles.age}>{peer.age}</Text>
+            <Text style={styles.name} numberOfLines={1}>{peer.full_name}</Text>
+            <Text style={styles.age}>, {peer.age}</Text>
           </View>
-          <Text style={styles.username}>@{peer.username}</Text>
+          <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
+          <Text style={styles.timeText}>Active {formatRelativeTime(peer.last_active_at)}</Text>
         </View>
-        <SignalIndicator signal={peer.signal_strength} />
+        <SignalIndicator strength={peer.signal_strength} />
       </View>
+
       <View style={styles.footer}>
-        <DistanceBadge distance={peer.formatted_distance} status={peer.presence_status} />
-        <View style={styles.chatPrompt}>
-          <Text style={styles.chatPromptText}>Chat</Text>
-          <Ionicons name="chevron-forward" size={16} color={theme.colors.primary.main} />
-        </View>
+        <DistanceBadge distance={peer.formatted_distance} />
       </View>
     </TouchableOpacity>
   );
@@ -40,9 +38,9 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -52,44 +50,39 @@ const styles = StyleSheet.create({
   },
   info: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: theme.spacing.md,
+    marginRight: theme.spacing.sm,
   },
   nameRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'baseline',
   },
   name: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
-    marginRight: 6,
+    flexShrink: 1,
   },
   age: {
-    fontSize: 15,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
   },
   username: {
-    fontSize: 13,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
     marginTop: 2,
   },
+  timeText: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.text.tertiary,
+    marginTop: 4,
+  },
   footer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 14,
-    paddingTop: 10,
+    justifyContent: 'flex-start',
+    marginTop: theme.spacing.sm,
+    paddingTop: theme.spacing.sm,
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
-  },
-  chatPrompt: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  chatPromptText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.primary.main,
-    marginRight: 2,
   },
 });
