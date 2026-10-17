@@ -33,14 +33,12 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
           <Text style={styles.backButton}>Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{userName}</Text>
-        <View style={{ width: 40 }} />
       </View>
 
       <FlatList
         data={messages}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.messageList}
-        renderItem={({ item }) => {
+        keyExtractor={(item: ChatMessage) => item.id}
+        renderItem={({ item }: { item: ChatMessage }) => {
           const isMe = item.sender_id === myId;
           return (
             <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
@@ -48,6 +46,7 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
             </View>
           );
         }}
+        contentContainerStyle={styles.messageList}
       />
 
       <View style={styles.inputContainer}>
@@ -74,17 +73,14 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 48,
-    paddingBottom: 16,
-    backgroundColor: theme.colors.surface,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
   backButton: {
     color: theme.colors.primary.main,
     fontSize: 16,
+    marginRight: 16,
   },
   headerTitle: {
     color: theme.colors.text.primary,
@@ -98,7 +94,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
-    maxWidth: '75%',
+    maxWidth: '80%',
   },
   myMessage: {
     backgroundColor: theme.colors.primary.main,
@@ -107,19 +103,17 @@ const styles = StyleSheet.create({
   theirMessage: {
     backgroundColor: theme.colors.surface,
     alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
   },
   messageText: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontSize: 15,
   },
   inputContainer: {
     flexDirection: 'row',
     padding: 12,
-    backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
   },
   input: {
     flex: 1,
@@ -128,11 +122,12 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    color: '#FFF',
-    marginRight: 8,
+    color: '#FFFFFF',
+    fontSize: 15,
+    height: 40,
   },
   sendButton: {
+    marginLeft: 8,
     backgroundColor: theme.colors.primary.main,
     justifyContent: 'center',
     alignItems: 'center',
@@ -140,7 +135,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   sendButtonText: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
 });
