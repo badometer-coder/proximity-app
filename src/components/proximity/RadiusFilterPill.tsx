@@ -18,7 +18,7 @@ export const RadiusFilterPill: React.FC<RadiusFilterPillProps> = ({
   filter,
   isSelected,
   onSelect,
-}) => {
+}: RadiusFilterPillProps) => {
   return (
     <TouchableOpacity
       style={[

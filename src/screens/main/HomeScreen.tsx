@@ -48,8 +48,8 @@ export const HomeScreen: React.FC = () => {
   if (selectedPeer) {
     return (
       <ChatThreadScreen 
-        userId={selectedPeer.id}
-        userName={selectedPeer.full_name || selectedPeer.username}
+        peerId={selectedPeer.id}
+        peerName={selectedPeer.full_name || selectedPeer.username}
         myId={user?.id ?? null}
         onBack={() => setSelectedPeer(null)}
       />

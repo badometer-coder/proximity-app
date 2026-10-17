@@ -5,15 +5,15 @@ import { theme } from '../../constants/theme';
 import { ChatMessage } from '../../types';
 
 interface ChatThreadScreenProps {
-  userId: string;
-  userName: string;
+  peerId: string;
+  peerName: string;
   myId: string | null;
   onBack: () => void;
 }
 
-export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, userName, myId, onBack }) => {
+export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ peerId, peerName, myId, onBack }: ChatThreadScreenProps) => {
   const [inputText, setInputText] = useState('');
-  const { messages, isLoading, sendMessage } = useChatMessages(userId, userName);
+  const { messages, sendMessage } = useChatMessages(peerId, peerName);
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
@@ -43,12 +43,12 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{userName}</Text>
+        <Text style={styles.headerTitle}>{peerName}</Text>
       </View>
 
       <FlatList
         data={messages}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: ChatMessage) => item.id}
         renderItem={renderMessageItem}
         contentContainerStyle={styles.messageList}
         inverted={false}

@@ -8,7 +8,7 @@ interface ProfileSetupScreenProps {
   onComplete: () => void;
 }
 
-export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ onComplete }) => {
+export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ onComplete }: ProfileSetupScreenProps) => {
   const { session } = useAuth();
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
