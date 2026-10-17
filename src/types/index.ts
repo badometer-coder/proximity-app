@@ -1,6 +1,6 @@
-export type UserPresenceStatus = 'online' | 'away' | 'offline' | 'busy';
+export type UserPresenceStatus = 'online' | 'recently' | 'offline';
 
-export type SignalStrength = 'excellent' | 'good' | 'fair' | 'poor';
+export type SignalStrength = 'excellent' | 'good' | 'fair' | 'weak' | 'none';
 
 export interface GPSCoordinates {
   latitude: number;

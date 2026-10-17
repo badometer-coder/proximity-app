@@ -28,7 +28,7 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
           <Text style={styles.name} numberOfLines={1}>
             {peer.full_name}, {peer.age}
           </Text>
-          <SignalIndicator bars={signalBars} />
+          <SignalIndicator strength={peer.signal_strength} />
         </View>
 
         <Text style={styles.username} numberOfLines={1}>
