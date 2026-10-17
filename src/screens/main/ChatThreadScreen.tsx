@@ -16,7 +16,7 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, user
   const { messages, isLoading, sendMessage } = useChatMessages(userId, userName);
 
   const handleSend = async () => {
-    if (!inputText.trim() || !sendMessage) return;
+    if (!inputText.trim()) return;
     const textToSend = inputText;
     setInputText('');
     await sendMessage(textToSend);
