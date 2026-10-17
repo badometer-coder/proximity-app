@@ -4,8 +4,8 @@ import { FormattedNearbyPeer } from '../../types';
 import { Avatar } from '../common/Avatar';
 import { DistanceBadge } from './DistanceBadge';
 import { SignalIndicator } from './SignalIndicator';
+import { getSignalBars, getPresenceColor } from '../../lib/utils';
 import { theme } from '../../constants/theme';
-import { getPresenceColor, getSignalBars } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -13,8 +13,8 @@ interface NearbyPeerCardProps {
 }
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
+  const bars = getSignalBars(peer.signal_strength);
   const presenceColor = getPresenceColor(peer.presence_status);
-  const signalBars = getSignalBars(peer.signal_strength);
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
@@ -36,9 +36,9 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
         </Text>
 
         <View style={styles.footerRow}>
-          <SignalIndicator bars={signalBars} />
-          <Text style={styles.statusText}>
-            {peer.presence_status === 'online' ? 'Online now' : `Active ${peer.presence_status}`}
+          <SignalIndicator strength={peer.signal_strength} bars={bars} />
+          <Text style={styles.presenceText}>
+            {peer.presence_status.charAt(0).toUpperCase() + peer.presence_status.slice(1)}
           </Text>
         </View>
       </View>
@@ -63,8 +63,8 @@ const styles = StyleSheet.create({
   },
   presenceDot: {
     position: 'absolute',
-    bottom: 2,
-    right: 2,
+    bottom: 0,
+    right: 0,
     width: 14,
     height: 14,
     borderRadius: 7,
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  statusText: {
+  presenceText: {
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.tertiary,
     textTransform: 'capitalize',
