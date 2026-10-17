@@ -25,7 +25,7 @@ export const HomeScreen: React.FC = () => {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary.main} />
-        <Text style={styles.loadingText}>Acquiring GPS location...</Text>
+        <Text style={styles.loadingText}>Acquiring barometer location...</Text>
       </View>
     );
   }
