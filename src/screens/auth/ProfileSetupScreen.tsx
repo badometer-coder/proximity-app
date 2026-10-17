@@ -36,9 +36,9 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ onComple
         <Text style={styles.title}>Setup Profile</Text>
         <Text style={styles.subtitle}>Tell us a bit about yourself</Text>
 
-        <TextInput style={styles.input} placeholder="Full Name (e.g., John Doe)" value={fullName} onChangeText={setFullName} />
-        <TextInput style={styles.input} placeholder="Username (e.g., john_doe)" value={username} onChangeText={setUsername} autoCapitalize="none" />
-        <TextInput style={styles.input} placeholder="Age (must be 18+)" value={age} onChangeText={setAge} keyboardType="number-pad" />
+        <TextInput style={styles.input} placeholder="Full Name (e.g., John Doe)" value={fullName} onChangeText={setFullName} placeholderTextColor={theme.colors.text.tertiary} />
+        <TextInput style={styles.input} placeholder="Username (e.g., john_doe)" value={username} onChangeText={setUsername} autoCapitalize="none" placeholderTextColor={theme.colors.text.tertiary} />
+        <TextInput style={styles.input} placeholder="Age (must be 18+)" value={age} onChangeText={setAge} keyboardType="number-pad" placeholderTextColor={theme.colors.text.tertiary} />
 
         <TouchableOpacity style={styles.button} onPress={handleSave} disabled={isLoading}>
           <Text style={styles.buttonText}>{isLoading ? 'Saving...' : 'Save & Continue'}</Text>
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   inner: { flex: 1, justifyContent: 'center', padding: 24 },
   title: { fontSize: 28, fontWeight: 'bold', color: theme.colors.text.primary, marginBottom: 8 },
   subtitle: { fontSize: 15, color: theme.colors.text.secondary, marginBottom: 32 },
-  input: { backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 8, padding: 14, fontSize: 15, marginBottom: 16 },
+  input: { backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 8, padding: 14, fontSize: 15, marginBottom: 16, color: theme.colors.text.primary },
   button: { backgroundColor: theme.colors.primary.main, padding: 16, borderRadius: 8, alignItems: 'center' },
   buttonText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
 });

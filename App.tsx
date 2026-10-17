@@ -8,7 +8,7 @@ import { ThemeProvider } from './src/context/ThemeContext';
 import { useAuth } from './src/hooks/auth/useAuth';
 import { LoginScreen } from './src/screens/auth/LoginScreen';
 import { ProfileSetupScreen } from './src/screens/auth/ProfileSetupScreen';
-import HomeScreen from './src/screens/main/HomeScreen';
+import { HomeScreen } from './src/screens/main/HomeScreen';
 import ProximityFeedScreen from './src/screens/main/ProximityFeedScreen';
 import { ChatThreadScreen } from './src/screens/main/ChatThreadScreen';
 import { supabase } from './src/config/supabase';
@@ -71,7 +71,7 @@ function ProfileSettingsScreen() {
 function MainTabNavigator() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={({ route }: { route: { name: string } }) => ({
         headerShown: false,
         tabBarStyle: {
           backgroundColor: theme.colors.surface,
@@ -79,7 +79,7 @@ function MainTabNavigator() {
         },
         tabBarActiveTintColor: theme.colors.primary.main,
         tabBarInactiveTintColor: theme.colors.text.secondary,
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ focused, color, size }: { focused: boolean; color: string; size: number }) => {
           let iconName: keyof typeof Ionicons.glyphMap = 'home';
 
           if (route.name === 'HomeScreen') {

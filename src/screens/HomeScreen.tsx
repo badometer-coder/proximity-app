@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useAuth } from '../hooks/auth/useAuth';
 import { theme } from '../constants/theme';
 
-export const HomeScreen = () => {
+export const HomeScreen: React.FC = () => {
   const { signOut } = useAuth();
 
   const handleSignOut = async () => {

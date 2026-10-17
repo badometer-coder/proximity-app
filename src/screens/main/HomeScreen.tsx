@@ -13,7 +13,7 @@ import { theme } from '../../constants/theme';
 import { ChatThreadScreen } from './ChatThreadScreen';
 import { useAuth } from '../../hooks/auth/useAuth';
 
-export default function HomeScreen() {
+export const HomeScreen: React.FC = () => {
   const { location, isLoading: locationLoading, error: locationError, requestPermission } = useCurrentLocation();
   const { peers, selectedRadius, isLoading: peersLoading, isRefreshing, error: peersError, setRadius, refresh } = useNearbyPeers(location);
   const { user } = useAuth();
@@ -145,7 +145,7 @@ export default function HomeScreen() {
       )}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {

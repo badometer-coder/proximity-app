@@ -49,18 +49,18 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
       }
 
       if (data && Array.isArray(data)) {
-        const formatted: FormattedNearbyPeer[] = data.map((peer: any) => ({
-          id: peer.id,
-          username: peer.username,
-          full_name: peer.full_name,
-          age: peer.age,
-          avatar_url: peer.avatar_url,
-          is_ble_discoverable: peer.is_ble_discoverable,
-          distance_meters: peer.distance_meters,
-          last_active_at: peer.last_active_at,
-          formatted_distance: formatDistance(peer.distance_meters),
-          signal_strength: getSignalStrength(peer.distance_meters),
-          presence_status: getPresenceStatus(peer.last_active_at),
+        const formatted: FormattedNearbyPeer[] = (data as any[]).map((peer: any) => ({
+          id: String(peer.id),
+          username: String(peer.username),
+          full_name: String(peer.full_name),
+          age: Number(peer.age),
+          avatar_url: peer.avatar_url ? String(peer.avatar_url) : null,
+          is_ble_discoverable: Boolean(peer.is_ble_discoverable),
+          distance_meters: Number(peer.distance_meters),
+          last_active_at: String(peer.last_active_at),
+          formatted_distance: formatDistance(Number(peer.distance_meters)),
+          signal_strength: getSignalStrength(Number(peer.distance_meters)),
+          presence_status: getPresenceStatus(String(peer.last_active_at)),
         }));
 
         setPeers(formatted);

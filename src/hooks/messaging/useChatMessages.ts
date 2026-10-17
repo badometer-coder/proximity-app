@@ -31,7 +31,7 @@ export const useChatMessages = (otherUserId: string, myId: string | null) => {
     console.log('DEBUG: Database returned:', error, data);
 
     if (!error && data) {
-      setMessages(data.reverse());
+      setMessages((data as ChatMessage[]).reverse());
     }
     setIsLoading(false);
   };
@@ -48,7 +48,7 @@ export const useChatMessages = (otherUserId: string, myId: string | null) => {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload: any) => {
         const newMsg = payload.new;
         if (newMsg.sender_id === myId || newMsg.recipient_id === myId) {
-          setMessages((prev) => [...prev, { 
+          setMessages((prev: ChatMessage[]) => [...prev, { 
             ...newMsg, 
             is_own_message: newMsg.sender_id === myId 
           }]);

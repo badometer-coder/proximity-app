@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvo
 import { useAuth } from '../../hooks/auth/useAuth';
 import { theme } from '../../constants/theme';
 
-export const LoginScreen = () => {
+export const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('test@test.com');
   const [password, setPassword] = useState('Password123!');
   const [isLoading, setIsLoading] = useState(false);

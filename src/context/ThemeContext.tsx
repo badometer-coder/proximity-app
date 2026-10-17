@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export const lightColors = {
   background: '#F9FAFB',
@@ -45,10 +45,10 @@ const ThemeContext = createContext<ThemeContextType>({
   toggle: () => {},
 });
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [mode, setMode] = useState<ThemeMode>('dark');
   const colors = mode === 'dark' ? darkColors : lightColors;
-  const toggle = () => setMode(m => m === 'dark' ? 'light' : 'dark');
+  const toggle = () => setMode((m: ThemeMode) => m === 'dark' ? 'light' : 'dark');
   return (
     <ThemeContext.Provider value={{ mode, colors, toggle }}>
       {children}

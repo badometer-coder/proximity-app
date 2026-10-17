@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
@@ -10,7 +10,7 @@ import { ProximityHeader } from '../../components/proximity/ProximityHeader';
 import { EmptyState } from '../../components/common/EmptyState';
 import { FormattedNearbyPeer } from '../../types';
 
-export default function ProximityFeedScreen() {
+export default function ProximityFeedScreen(): React.JSX.Element {
   const { location, isLoading: locationLoading, error: locationError } = useCurrentLocation();
   const { peers, selectedRadius, isLoading, isRefreshing, error, lastFetchedAt, setRadius, refresh } = useNearbyPeers(location);
 
@@ -53,10 +53,10 @@ export default function ProximityFeedScreen() {
         </View>
       )}
 
-      <FlatList
+      <FlatList<FormattedNearbyPeer>
         data={peers}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+        keyExtractor={(item: FormattedNearbyPeer) => item.id}
+        renderItem={({ item }: { item: FormattedNearbyPeer }) => (
           <NearbyPeerCard peer={item} onPress={() => handleSelectPeer(item)} />
         )}
         contentContainerStyle={styles.listContainer}
