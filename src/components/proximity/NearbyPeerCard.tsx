@@ -2,9 +2,10 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { FormattedNearbyPeer } from '../../types';
 import { Avatar } from '../common/Avatar';
-import { SignalIndicator } from './SignalIndicator';
 import { DistanceBadge } from './DistanceBadge';
+import { SignalIndicator } from './SignalIndicator';
 import { theme } from '../../constants/theme';
+import { formatRelativeTime } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -13,7 +14,7 @@ interface NearbyPeerCardProps {
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
         <Avatar uri={peer.avatar_url} name={peer.full_name || peer.username} size={50} />
         <View style={styles.info}>
@@ -22,24 +23,23 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
             <Text style={styles.age}>, {peer.age}</Text>
           </View>
           <Text style={styles.username} numberOfLines={1}>@{peer.username}</Text>
+          <Text style={styles.lastActive}>Active {formatRelativeTime(peer.last_active_at)}</Text>
         </View>
         <SignalIndicator strength={peer.signal_strength} />
       </View>
-
       <View style={styles.footer}>
-        <DistanceBadge distance={peer.formatted_distance} status={peer.presence_status} />
-        <Text style={styles.connectText}>Tap to connect</Text>
+        <DistanceBadge distance={peer.formatted_distance} />
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
+  container: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -50,38 +50,38 @@ const styles = StyleSheet.create({
   info: {
     flex: 1,
     marginLeft: theme.spacing.md,
+    justifyContent: 'center',
   },
   nameRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'baseline',
   },
   name: {
     fontSize: theme.typography.fontSize.md,
-    fontWeight: theme.typography.fontWeight.semibold,
+    fontWeight: theme.typography.fontWeight.semibold as any,
     color: theme.colors.text.primary,
-    maxWidth: '80%',
   },
   age: {
-    fontSize: theme.typography.fontSize.md,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
   },
   username: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.secondary,
     marginTop: 2,
   },
+  lastActive: {
+    fontSize: 11,
+    color: theme.colors.text.tertiary,
+    marginTop: 4,
+  },
   footer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: theme.spacing.md,
-    paddingTop: theme.spacing.sm,
+    marginTop: theme.spacing.sm,
+    paddingTop: theme.spacing.xs,
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
-  },
-  connectText: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.primary.main,
-    fontWeight: theme.typography.fontWeight.medium,
+    justifyContent: 'space-between',
   },
 });
