@@ -2,10 +2,9 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { FormattedNearbyPeer } from '../../types';
 import { Avatar } from '../common/Avatar';
-import { SignalIndicator } from './SignalIndicator';
 import { DistanceBadge } from './DistanceBadge';
+import { SignalIndicator } from './SignalIndicator';
 import { theme } from '../../constants/theme';
-import { formatRelativeTime } from '../../lib/utils';
 
 interface NearbyPeerCardProps {
   peer: FormattedNearbyPeer;
@@ -14,9 +13,9 @@ interface NearbyPeerCardProps {
 
 export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress }) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
-        <Avatar uri={peer.avatar_url} name={peer.full_name} size={50} />
+        <Avatar uri={peer.avatar_url} name={peer.full_name} size={48} />
         <View style={styles.info}>
           <View style={styles.nameRow}>
             <Text style={styles.name}>{peer.full_name}</Text>
@@ -24,19 +23,23 @@ export const NearbyPeerCard: React.FC<NearbyPeerCardProps> = ({ peer, onPress })
           </View>
           <Text style={styles.username}>@{peer.username}</Text>
         </View>
-        <SignalIndicator signal={peer.signal_strength} />
+        <SignalIndicator strength={peer.signal_strength} />
       </View>
 
       <View style={styles.footer}>
-        <DistanceBadge distance={peer.formatted_distance} status={peer.presence_status} />
-        <Text style={styles.lastActive}>Active {formatRelativeTime(peer.last_active_at)}</Text>
+        <DistanceBadge distance={peer.formatted_distance} />
+        {peer.is_ble_discoverable && (
+          <View style={styles.bleBadge}>
+            <Text style={styles.bleText}>BLE</Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
+  container: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
@@ -72,15 +75,24 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginTop: theme.spacing.md,
     paddingTop: theme.spacing.sm,
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
   },
-  lastActive: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.tertiary,
+  bleBadge: {
+    backgroundColor: theme.colors.surfaceLight,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: theme.borderRadius.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  bleText: {
+    fontSize: 10,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.primary.main,
   },
 });
