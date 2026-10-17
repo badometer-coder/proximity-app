@@ -33,7 +33,6 @@ export const RadiusWheel = ({ value, onValueChange }: { value: number; onValueCh
               onPress={() => onValueChange(meters)}
               style={styles.itemContainer}
             >
-              {/* Row keeps the number and 'km' perfectly aligned */}
               <View style={styles.textRow}>
                 <Text style={[styles.text, isSelected && styles.textActive]}>
                   {km}
@@ -47,7 +46,6 @@ export const RadiusWheel = ({ value, onValueChange }: { value: number; onValueCh
             </TouchableOpacity>
           );
         })}
-        
       </ScrollView>
     </View>
   );
@@ -73,7 +71,7 @@ const styles = StyleSheet.create({
   },
   textRow: { 
     flexDirection: 'row', 
-    alignItems: 'baseline', // This makes 'km' sit perfectly at the bottom of the number!
+    alignItems: 'baseline',
   },
   text: { 
     fontSize: 16, 
@@ -81,17 +79,17 @@ const styles = StyleSheet.create({
     color: theme.colors.text.tertiary, 
   },
   textActive: { 
-    fontSize: 24, // Selected number gets bigger
+    fontSize: 24, 
     fontWeight: '700', 
     color: theme.colors.primary.main, 
   },
   smallKm: { 
-    fontSize: 9, // Very small 'km'
+    fontSize: 9, 
     color: theme.colors.text.tertiary, 
     marginLeft: 2, 
   },
   smallKmActive: { 
-    color: theme.colors.primary.main, // Turns blue when selected
+    color: theme.colors.primary.main, 
   },
   dot: { 
     width: 4, 

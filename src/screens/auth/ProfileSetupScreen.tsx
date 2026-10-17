@@ -20,7 +20,7 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ onComple
     setIsLoading(true);
     const { error } = await (supabase as any)
       .from('profiles')
-      .update({ full_name: fullName, username: username.toLowerCase(), age: parseInt(age) })
+      .update({ full_name: fullName, username: username.toLowerCase(), age: parseInt(age, 10) })
       .eq('id', session?.user?.id);
     setIsLoading(false);
     if (error) Alert.alert('Error saving profile', error.message);
