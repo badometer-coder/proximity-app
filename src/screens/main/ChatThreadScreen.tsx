@@ -2,15 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
 import { theme } from '../../constants/theme';
-
-interface ChatMessage {
-  id: string;
-  sender_id: string;
-  receiver_id: string;
-  message: string;
-  sent_at: string;
-  read: boolean;
-}
+import { ChatMessage } from '../../types';
 
 interface ChatThreadScreenProps {
   userId: string;
