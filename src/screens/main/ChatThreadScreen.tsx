@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { useChatMessages } from '../../hooks/messaging/useChatMessages';
 import { ChatMessage } from '../../types';
 import { theme } from '../../constants/theme';
@@ -11,48 +11,46 @@ interface ChatThreadScreenProps {
   onBack: () => void;
 }
 
-export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ userId, userName, myId, onBack }) => {
+export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({
+  userId,
+  userName,
+  myId,
+  onBack,
+}) => {
   const [inputText, setInputText] = useState('');
   const { messages, isLoading, sendMessage } = useChatMessages(userId, userName);
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
-    const text = inputText;
+    await sendMessage(inputText);
     setInputText('');
-    await sendMessage(text);
+  };
+
+  const renderItem = ({ item }: { item: ChatMessage }) => {
+    const isMe = item.sender_id === myId;
+    return (
+      <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
+        <Text style={styles.messageText}>{item.message}</Text>
+      </View>
+    );
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+        <TouchableOpacity onPress={onBack}>
+          <Text style={styles.backText}>{'< Back'}</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{userName}</Text>
+        <View style={{ width: 40 }} />
       </View>
 
-      {isLoading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={theme.colors.primary.main} />
-        </View>
-      ) : (
-        <FlatList
-          data={messages}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.messageList}
-          renderItem={({ item }) => {
-            const isMe = item.sender_id === myId;
-            return (
-              <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
-                <Text style={styles.messageText}>{item.message}</Text>
-                <Text style={styles.timeText}>
-                  {new Date(item.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Text>
-              </View>
-            );
-          }}
-        />
-      )}
+      <FlatList
+        data={messages}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContainer}
+      />
 
       <View style={styles.inputContainer}>
         <TextInput
@@ -78,87 +76,75 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
-    paddingTop: 48,
   },
-  backButton: {
-    marginRight: 16,
-  },
-  backButtonText: {
+  backText: {
     color: theme.colors.primary.main,
     fontSize: 16,
-    fontWeight: '600',
   },
   headerTitle: {
     color: theme.colors.text.primary,
     fontSize: 18,
     fontWeight: 'bold',
   },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  messageList: {
+  listContainer: {
     padding: 16,
   },
   messageBubble: {
-    maxWidth: '75%',
     padding: 12,
-    borderRadius: 12,
-    marginBottom: 10,
+    borderRadius: 8,
+    marginVertical: 4,
+    maxWidth: '80%',
   },
   myMessage: {
-    alignSelf: 'flex-end',
     backgroundColor: theme.colors.primary.main,
+    alignSelf: 'flex-end',
   },
   theirMessage: {
-    alignSelf: 'flex-start',
     backgroundColor: theme.colors.surface,
+    alignSelf: 'flex-start',
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
   messageText: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontSize: 15,
-  },
-  timeText: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 10,
-    marginTop: 4,
-    alignSelf: 'flex-end',
   },
   inputContainer: {
     flexDirection: 'row',
     padding: 12,
+    backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
+    alignItems: 'center',
   },
   input: {
     flex: 1,
     backgroundColor: theme.colors.background,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: 20,
-    paddingHorizontal: 16,
+    borderRadius: 8,
+    paddingHorizontal: 12,
     paddingVertical: 10,
-    color: '#FFF',
+    color: '#FFFFFF',
     fontSize: 15,
+    marginRight: 8,
   },
   sendButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginLeft: 8,
     backgroundColor: theme.colors.primary.main,
-    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
   },
   sendButtonText: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontWeight: '600',
+    fontSize: 15,
   },
 });
