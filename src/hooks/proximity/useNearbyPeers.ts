@@ -38,7 +38,7 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
         radius_meters: selectedRadius,
         lat: currentLocation.latitude,
         lon: currentLocation.longitude,
-      });
+      } as any);
 
       if (rpcError) {
         throw {
@@ -61,7 +61,7 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
           formatted_distance: formatDistance(Number(peer.distance_meters)),
           signal_strength: getSignalStrength(Number(peer.distance_meters)),
           presence_status: getPresenceStatus(String(peer.last_active_at)),
-        }));
+        })) as FormattedNearbyPeer[];
 
         setPeers(formatted);
         setLastFetchedAt(new Date().toISOString());
