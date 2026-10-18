@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useCurrentLocation } from '../../hooks/location/useCurrentLocation';
 import { useNearbyPeers } from '../../hooks/proximity/useNearbyPeers';
@@ -57,7 +58,7 @@ export const HomeScreen: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ProximityHeader lastUpdated={null} />
 
       <View style={styles.filterSection}>
@@ -121,6 +122,7 @@ export const HomeScreen: React.FC = () => {
               <View style={styles.radarRingSmall}>
                 <View style={styles.radarCenterDot} />
               </View>
+              </View>
             </View>
           </View>
 
@@ -143,7 +145,7 @@ export const HomeScreen: React.FC = () => {
           })}
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
