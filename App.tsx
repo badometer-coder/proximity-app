@@ -49,17 +49,21 @@ function ProfileSettingsScreen() {
     if (!result.canceled) {
       setIsUploading(true);
       try {
-        const response = await fetch(result.assets[0].uri);
-        const blob = await response.blob();
-        const filename = `${session?.user?.id}/${Date.now()}.jpg`;
+        const uri = result.assets[0].uri;
+        const filename = uri.split('/').pop() || 'avatar.jpg';
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : `image`;
 
-        const { error: uploadError } = await supabase.storage
+        const formData = new FormData();
+        formData.append('file', { uri, name: filename, type } as any);
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('avatars')
-          .upload(filename, blob, { contentType: 'image/jpeg' });
+          .upload(`${session?.user?.id}/${Date.now()}.jpg`, formData as any);
         
         if (uploadError) throw uploadError;
         
-        const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(filename);
+        const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(uploadData.path);
         
         const { error: updateError } = await supabase
           .from('profiles')
@@ -71,7 +75,8 @@ function ProfileSettingsScreen() {
         setProfile({ ...profile!, avatar_url: publicData.publicUrl });
         Alert.alert('Success', 'Avatar updated!');
       } catch (err: any) {
-        Alert.alert('Error', err.message);
+        console.error('Upload Error Details:', err);
+        Alert.alert('Upload Error', err.message || 'Check your internet or Supabase permissions.');
       } finally {
         setIsUploading(false);
       }
@@ -121,6 +126,28 @@ function ProfileSettingsScreen() {
   );
 }
 
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ChatListScreen } from './src/screens/main/ChatListScreen';
+
+const Stack = createNativeStackNavigator();
+
+function ChatStack() {
+  const { session } = useAuth();
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ChatList" component={ChatListScreen} />
+      <Stack.Screen name="ChatThread" component={({ route, navigation }: any) => (
+        <ChatThreadScreen 
+          peerId={route.params?.peerId} 
+          peerName={route.params?.peerName} 
+          myId={session?.user?.id ?? null} 
+          onBack={() => navigation.goBack()} 
+        />
+      )} />
+    </Stack.Navigator>
+  );
+}
+
 function MainTabNavigator() {
   return (
     <Tab.Navigator
@@ -160,18 +187,8 @@ function MainTabNavigator() {
         options={{ title: 'Proximity Feed' }}
       />
       <Tab.Screen 
-        name="ChatThreadScreen" 
-        component={() => {
-          const { session } = useAuth();
-          return (
-            <ChatThreadScreen 
-              peerId="" 
-              peerName="General Chat" 
-              myId={session?.user?.id ?? null} 
-              onBack={() => {}} 
-            />
-          );
-        }} 
+        name="ChatStack" 
+        component={ChatStack} 
         options={{ title: 'Chats' }}
       />
       <Tab.Screen 
