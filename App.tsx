@@ -47,12 +47,21 @@ function ProfileSettingsScreen() {
   return (
     <View style={styles.profileContainer}>
       <Text style={styles.title}>Profile & Settings</Text>
-      <View style={styles.card}>
+        <View style={styles.card}>
+        <View style={styles.avatarPlaceholder}>
+          {profile?.avatar_url ? (
+            <Image source={{ uri: profile.avatar_url }} style={styles.avatarImage} />
+          ) : (
+            <Ionicons name="person" size={50} color={theme.colors.text.secondary} />
+          )}
+        </View>
+
         <Text style={styles.label}>Full Name</Text>
         <Text style={styles.value}>{profile?.full_name || 'Not set'}</Text>
 
         <Text style={styles.label}>Username</Text>
         <Text style={styles.value}>@{profile?.username || 'not_set'}</Text>
+
 
         <Text style={styles.label}>Email</Text>
         <Text style={styles.value}>{session?.user?.email}</Text>
@@ -80,7 +89,7 @@ function MainTabNavigator() {
         tabBarActiveTintColor: theme.colors.primary.main,
         tabBarInactiveTintColor: theme.colors.text.secondary,
         tabBarIcon: ({ focused, color, size }: { focused: boolean; color: string; size: number }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = 'home';
+          let iconName: any = 'home'; // Fallback to any to avoid strict type issues
 
           if (route.name === 'HomeScreen') {
             iconName = focused ? 'home' : 'home-outline';
@@ -92,7 +101,7 @@ function MainTabNavigator() {
             iconName = focused ? 'person' : 'person-outline';
           }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return <Ionicons name={iconName as any} size={size} color={color} />;
         },
       })}
     >
@@ -239,5 +248,21 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  avatarPlaceholder: {
+    alignItems: 'center',
+    marginBottom: 16,
+    backgroundColor: theme.colors.surfaceLight,
+    padding: 20,
+    borderRadius: 60,
+    width: 100,
+    height: 100,
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
+  avatarImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
   },
 });
