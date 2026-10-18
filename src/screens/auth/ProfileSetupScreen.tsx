@@ -77,10 +77,7 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ onComple
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <View style={styles.container}>
       <View style={styles.inner}>
         <Text style={styles.title}>Setup Profile</Text>
         <Text style={styles.subtitle}>Tell us a bit about yourself</Text>
@@ -90,7 +87,7 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ onComple
              {avatarUrl ? (
                 <Image source={{ uri: avatarUrl }} style={{ width: '100%', height: '100%', borderRadius: 60 }} />
              ) : (
-                <Text style={{color: '#333'}}>Add Photo</Text>
+                <Text style={{color: '#000000', fontWeight: 'bold'}}>ADD PHOTO</Text>
              )}
           </View>
         </TouchableOpacity>
@@ -103,15 +100,15 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ onComple
           <Text style={styles.buttonText}>{isLoading ? 'Saving...' : 'Save & Continue'}</Text>
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   inner: { flex: 1, justifyContent: 'flex-start', padding: 24, paddingTop: 60 },
-  avatarContainer: { alignItems: 'center', marginBottom: 24 },
-  avatar: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#E5E7EB', alignItems: 'center', justifyContent: 'center' },
+  avatarContainer: { alignItems: 'center', marginBottom: 24, height: 150, justifyContent: 'center' },
+  avatar: { width: 120, height: 120, borderRadius: 60, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 28, fontWeight: 'bold', color: theme.colors.text.primary, marginBottom: 8 },
   subtitle: { fontSize: 15, color: theme.colors.text.secondary, marginBottom: 32 },
   input: { backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 8, padding: 14, fontSize: 15, marginBottom: 16, color: theme.colors.text.primary },
