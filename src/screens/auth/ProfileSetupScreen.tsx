@@ -90,7 +90,7 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ onComple
              {avatarUrl ? (
                 <Image source={{ uri: avatarUrl }} style={{ width: '100%', height: '100%', borderRadius: 60 }} />
              ) : (
-                <Text style={{color: '#999'}}>Add Photo</Text>
+                <Text style={{color: '#333'}}>Add Photo</Text>
              )}
           </View>
         </TouchableOpacity>
@@ -109,7 +109,7 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ onComple
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
-  inner: { flex: 1, justifyContent: 'center', padding: 24 },
+  inner: { flex: 1, justifyContent: 'flex-start', padding: 24, paddingTop: 60 },
   avatarContainer: { alignItems: 'center', marginBottom: 24 },
   avatar: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#E5E7EB', alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 28, fontWeight: 'bold', color: theme.colors.text.primary, marginBottom: 8 },
