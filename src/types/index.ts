@@ -55,7 +55,7 @@ export interface ChatMessage {
   id: string;
   sender_id: string;
   receiver_id: string;
-  message: string;
+  body: string;
   sent_at: string;
   read: boolean;
 }
