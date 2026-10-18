@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,6 +22,7 @@ function ProfileSettingsScreen() {
   const { session, signOut } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -36,6 +38,46 @@ function ProfileSettingsScreen() {
     fetchProfile();
   }, [session]);
 
+  const handleChangeAvatar = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      setIsUploading(true);
+      try {
+        const response = await fetch(result.assets[0].uri);
+        const blob = await response.blob();
+        const filename = `${session?.user?.id}/${Date.now()}.jpg`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filename, blob, { contentType: 'image/jpeg' });
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(filename);
+        
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ avatar_url: publicData.publicUrl })
+          .eq('id', session?.user?.id);
+        
+        if (updateError) throw updateError;
+        
+        setProfile({ ...profile!, avatar_url: publicData.publicUrl });
+        Alert.alert('Success', 'Avatar updated!');
+      } catch (err: any) {
+        Alert.alert('Error', err.message);
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -48,13 +90,15 @@ function ProfileSettingsScreen() {
     <View style={styles.profileContainer}>
       <Text style={styles.title}>Profile & Settings</Text>
         <View style={styles.card}>
-        <View style={styles.avatarPlaceholder}>
-          {profile?.avatar_url ? (
+        <TouchableOpacity style={styles.avatarPlaceholder} onPress={handleChangeAvatar} disabled={isUploading}>
+          {isUploading ? (
+            <ActivityIndicator color={theme.colors.primary.main} />
+          ) : profile?.avatar_url ? (
             <Image source={{ uri: profile.avatar_url }} style={styles.avatarImage} />
           ) : (
             <Ionicons name="person" size={50} color={theme.colors.text.secondary} />
           )}
-        </View>
+        </TouchableOpacity>
 
         <Text style={styles.label}>Full Name</Text>
         <Text style={styles.value}>{profile?.full_name || 'Not set'}</Text>
