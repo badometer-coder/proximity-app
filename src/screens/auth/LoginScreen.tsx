@@ -7,11 +7,18 @@ export const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('test@test.com');
   const [password, setPassword] = useState('Password123!');
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn: signInEmail, signUp, signInWithGoogle } = useAuth();
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    const { error } = await signInWithGoogle();
+    setIsLoading(false);
+    if (error) Alert.alert('Google Login Failed', error.message);
+  };
 
   const handleLogin = async () => {
     setIsLoading(true);
-    const { error } = await signIn(email, password);
+    const { error } = await signInEmail(email, password); 
     setIsLoading(false);
     if (error) Alert.alert('Login Failed', error.message);
   };
@@ -21,7 +28,7 @@ export const LoginScreen: React.FC = () => {
     const { error } = await signUp(email, password);
     setIsLoading(false);
     if (error) Alert.alert('Signup Failed', error.message);
-    else Alert.alert('Success', 'Account created! You can now log in.');
+    else Alert.alert('Success', 'Check your email for confirmation (if enabled).');
   };
 
   return (
@@ -40,6 +47,10 @@ export const LoginScreen: React.FC = () => {
           <Text style={styles.buttonText}>{isLoading ? 'Logging in...' : 'Log In'}</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity style={[styles.button, styles.googleButton]} onPress={handleGoogleLogin} disabled={isLoading}>
+          <Text style={styles.buttonText}>Sign In with Google</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={[styles.button, styles.buttonOutline]} onPress={handleSignup} disabled={isLoading}>
           <Text style={styles.buttonTextOutline}>Create Account</Text>
         </TouchableOpacity>
@@ -49,13 +60,79 @@ export const LoginScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
-  inner: { flex: 1, justifyContent: 'center', padding: 24 },
-  title: { fontSize: 36, fontWeight: 'bold', color: theme.colors.primary.main, textAlign: 'center' },
-  subtitle: { fontSize: 16, color: theme.colors.text.secondary, marginBottom: 40, textAlign: 'center' },
-  input: { backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 8, padding: 14, fontSize: 15, marginBottom: 16, color: '#FFFFFF' },
-  button: { backgroundColor: theme.colors.primary.main, padding: 16, borderRadius: 8, alignItems: 'center', marginBottom: 12 },
-  buttonText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
-  buttonOutline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: theme.colors.primary.main },
-  buttonTextOutline: { color: theme.colors.primary.main, fontSize: 16, fontWeight: '600' },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#FFFFFF' 
+  },
+  inner: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    padding: 32 
+  },
+  title: { 
+    fontSize: 42, 
+    fontWeight: '800', 
+    color: theme.colors.primary.main, 
+    textAlign: 'center',
+    marginBottom: 8,
+    letterSpacing: -0.5
+  },
+  subtitle: { 
+    fontSize: 16, 
+    color: theme.colors.text.secondary, 
+    marginBottom: 48, 
+    textAlign: 'center',
+    opacity: 0.8
+  },
+  input: { 
+    backgroundColor: '#F3F4F6', 
+    borderWidth: 1, 
+    borderColor: '#E5E7EB', 
+    borderRadius: 16, 
+    padding: 18, 
+    fontSize: 16, 
+    marginBottom: 20, 
+    color: '#000000',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1
+  },
+  button: { 
+    backgroundColor: theme.colors.primary.main, 
+    padding: 18, 
+    borderRadius: 16, 
+    alignItems: 'center', 
+    marginBottom: 16,
+    shadowColor: theme.colors.primary.main,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4
+  },
+  buttonText: { 
+    color: '#FFF', 
+    fontSize: 16, 
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1
+  },
+  buttonOutline: { 
+    backgroundColor: '#FF3B30', 
+    borderWidth: 0, 
+    padding: 18,
+    borderRadius: 16,
+    alignItems: 'center'
+  },
+  googleButton: {
+    backgroundColor: '#4285F4',
+  },
+  buttonTextOutline: { 
+    color: '#FFFFFF', 
+    fontSize: 16, 
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1
+  },
 });

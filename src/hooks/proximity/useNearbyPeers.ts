@@ -84,6 +84,13 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
     fetchPeers();
   }, [fetchPeers]);
 
+  useEffect(() => {
+    if (location) {
+      const timer = setTimeout(() => { fetchPeers(); }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [location, fetchPeers]);
+
   const setRadius = (radius: number) => {
     setSelectedRadius(radius);
   };
