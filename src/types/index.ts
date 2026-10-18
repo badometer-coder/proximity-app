@@ -50,3 +50,12 @@ export interface UserProfile {
   created_at?: string;
   updated_at?: string;
 }
+
+export interface ChatMessage {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  message: string;
+  sent_at: string;
+  read: boolean;
+}

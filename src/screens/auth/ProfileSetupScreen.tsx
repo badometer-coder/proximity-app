@@ -9,7 +9,7 @@ interface ProfileSetupScreenProps {
   onComplete: () => void;
 }
 
-export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ onComplete }) => {
+export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ onComplete }: ProfileSetupScreenProps) => {
   const { session } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [fullName, setFullName] = useState('');
@@ -66,7 +66,7 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ onComple
       .update({ 
         full_name: fullName, 
         username: username.toLowerCase(), 
-        age: parseInt(age),
+        age: parseInt(age, 10),
         avatar_url: publicUrl 
       })
       .eq('id', session?.user?.id);

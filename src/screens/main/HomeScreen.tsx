@@ -25,7 +25,7 @@ export const HomeScreen: React.FC = () => {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary.main} />
-        <Text style={styles.loadingText}>Acquiring GPS location...</Text>
+        <Text style={styles.loadingText}>Acquiring barometer location...</Text>
       </View>
     );
   }
@@ -48,8 +48,8 @@ export const HomeScreen: React.FC = () => {
   if (selectedPeer) {
     return (
       <ChatThreadScreen 
-        userId={selectedPeer.id}
-        userName={selectedPeer.full_name || selectedPeer.username}
+        peerId={selectedPeer.id}
+        peerName={selectedPeer.full_name || selectedPeer.username}
         myId={user?.id ?? null}
         onBack={() => setSelectedPeer(null)}
       />
@@ -105,8 +105,8 @@ export const HomeScreen: React.FC = () => {
       ) : activeTab === 'list' ? (
         <FlatList
           data={peers}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
+          keyExtractor={(item: FormattedNearbyPeer) => item.id}
+          renderItem={({ item }: { item: FormattedNearbyPeer }) => (
             <NearbyPeerCard peer={item} onPress={() => setSelectedPeer(item)} />
           )}
           contentContainerStyle={styles.listContainer}
@@ -124,7 +124,7 @@ export const HomeScreen: React.FC = () => {
             </View>
           </View>
 
-          {peers.map((peer, index) => {
+          {peers.map((peer: FormattedNearbyPeer, index: number) => {
             const angle = (index / peers.length) * 2 * Math.PI;
             const distanceRatio = Math.min(peer.distance_meters / (selectedRadius * 1000), 1);
             const radiusOffset = distanceRatio * 120;

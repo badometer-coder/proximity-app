@@ -112,8 +112,8 @@ function MainTabNavigator() {
           const { session } = useAuth();
           return (
             <ChatThreadScreen 
-              userId="" 
-              userName="General Chat" 
+              peerId="" 
+              peerName="General Chat" 
               myId={session?.user?.id ?? null} 
               onBack={() => {}} 
             />
