@@ -59,5 +59,16 @@ export const useChatMessages = (otherUserId: string, myId: string | null) => {
     return () => { supabase.removeChannel(channel); };
   }, [myId, otherUserId]);
 
-  return { messages, isLoading };
+  const sendMessage = async (text: string) => {
+    if (!myId) return;
+    const { error } = await (supabase as any).from('messages').insert({
+      sender_id: myId,
+      recipient_id: otherUserId,
+      body: text,
+      is_synced: false
+    });
+    if (error) console.error('Error sending message:', error);
+  };
+
+  return { messages, isLoading, sendMessage };
 };

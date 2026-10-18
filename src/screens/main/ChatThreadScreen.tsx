@@ -13,7 +13,7 @@ interface ChatThreadScreenProps {
 
 export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ peerId, peerName, myId, onBack }: ChatThreadScreenProps) => {
   const [inputText, setInputText] = useState('');
-  const { messages, sendMessage } = useChatMessages(peerId, peerName);
+  const { messages, sendMessage } = useChatMessages(peerId, myId);
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
@@ -27,7 +27,7 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ peerId, peer
     return (
       <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
         <Text style={[styles.messageText, isMe ? styles.myMessageText : styles.theirMessageText]}>
-          {item.message}
+          {item.body}
         </Text>
       </View>
     );
@@ -36,8 +36,8 @@ export const ChatThreadScreen: React.FC<ChatThreadScreenProps> = ({ peerId, peer
   return (
     <KeyboardAvoidingView 
       style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
