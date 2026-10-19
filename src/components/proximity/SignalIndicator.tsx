@@ -1,20 +1,24 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { theme } from '../../constants/theme';
+import { SignalStrength } from '../../types';
 
 interface SignalIndicatorProps {
-  distanceKm: number;
+  strength: SignalStrength;
 }
 
-export const SignalIndicator: React.FC<SignalIndicatorProps> = ({ distanceKm }) => {
-  const getSignalStrength = (distance: number) => {
-    if (distance <= 0.5) return 4;
-    if (distance <= 2) return 3;
-    if (distance <= 5) return 2;
-    return 1;
+export const SignalIndicator: React.FC<SignalIndicatorProps> = ({ strength }) => {
+  const getSignalLevel = (s: SignalStrength) => {
+    switch (s) {
+      case 'excellent': return 4;
+      case 'good': return 3;
+      case 'fair': return 2;
+      case 'weak': return 1;
+      default: return 0;
+    }
   };
 
-  const strength = getSignalStrength(distanceKm);
+  const level = getSignalLevel(strength);
 
   return (
     <View style={styles.container}>
@@ -24,7 +28,7 @@ export const SignalIndicator: React.FC<SignalIndicatorProps> = ({ distanceKm }) 
           style={[
             styles.bar,
             { height: bar * 5 + 4 },
-            bar <= strength ? styles.activeBar : styles.inactiveBar,
+            bar <= level ? styles.activeBar : styles.inactiveBar,
           ]}
         />
       ))}

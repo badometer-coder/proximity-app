@@ -65,7 +65,7 @@ function ProfileSettingsScreen() {
         
         const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(uploadData.path);
         
-        const { error: updateError } = await supabase
+        const { error: updateError } = await (supabase as any)
           .from('profiles')
           .update({ avatar_url: publicData.publicUrl })
           .eq('id', session?.user?.id);

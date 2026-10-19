@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../config/supabase';
-
-export interface ChatMessage {
-  id: string;
-  body: string;
-  sender_id: string;
-  sent_at: string;
-  is_own_message: boolean;
-}
+import { ChatMessage } from '../../types';
 
 export const useChatMessages = (otherUserId: string, myId: string | null) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);

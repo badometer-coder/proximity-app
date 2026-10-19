@@ -58,4 +58,5 @@ export interface ChatMessage {
   body: string;
   sent_at: string;
   read: boolean;
+  is_own_message?: boolean;
 }
