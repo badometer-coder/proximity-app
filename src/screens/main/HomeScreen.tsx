@@ -10,11 +10,14 @@ import { RadiusSlider } from '../../components/proximity/RadiusSlider';
 import { ProximityHeader } from '../../components/proximity/ProximityHeader';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Avatar } from '../../components/common/Avatar';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 import { ChatThreadScreen } from './ChatThreadScreen';
 import { useAuth } from '../../hooks/auth/useAuth';
 
 export const HomeScreen: React.FC = () => {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
+  
   const { location, isLoading: locationLoading, error: locationError, requestPermission } = useCurrentLocation();
   const { peers, selectedRadius, isLoading: peersLoading, isRefreshing, error: peersError, setRadius, refresh } = useNearbyPeers(location);
   const { user } = useAuth();
@@ -25,7 +28,7 @@ export const HomeScreen: React.FC = () => {
   if (locationLoading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={theme.colors.primary.main} />
+        <ActivityIndicator size="large" color={colors.primary.main} />
         <Text style={styles.loadingText}>Acquiring barometer location...</Text>
       </View>
     );
@@ -35,7 +38,7 @@ export const HomeScreen: React.FC = () => {
     return (
       <View style={styles.centerContainer}>
         <EmptyState 
-          icon={<Ionicons name="location-outline" size={48} color={theme.colors.error} />} 
+          icon={<Ionicons name="location-outline" size={48} color={colors.error} />} 
           title="Location Access Required" 
           description={locationError} 
         />
@@ -69,14 +72,14 @@ export const HomeScreen: React.FC = () => {
             style={[styles.tabButton, activeTab === 'radar' && styles.activeTabButton]}
             onPress={() => setActiveTab('radar')}
           >
-            <Ionicons name="compass" size={16} color={activeTab === 'radar' ? '#FFF' : theme.colors.text.secondary} />
+            <Ionicons name="compass" size={16} color={activeTab === 'radar' ? '#FFF' : colors.text.secondary} />
             <Text style={[styles.tabButtonText, activeTab === 'radar' && styles.activeTabButtonText]}>Radar View</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.tabButton, activeTab === 'list' && styles.activeTabButton]}
             onPress={() => setActiveTab('list')}
           >
-            <Ionicons name="list" size={16} color={activeTab === 'list' ? '#FFF' : theme.colors.text.secondary} />
+            <Ionicons name="list" size={16} color={activeTab === 'list' ? '#FFF' : colors.text.secondary} />
             <Text style={[styles.tabButtonText, activeTab === 'list' && styles.activeTabButtonText]}>List View</Text>
           </TouchableOpacity>
         </View>
@@ -84,13 +87,13 @@ export const HomeScreen: React.FC = () => {
 
       {peersLoading && !isRefreshing ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary.main} />
+          <ActivityIndicator size="large" color={colors.primary.main} />
           <Text style={styles.loadingText}>Scanning for nearby peers...</Text>
         </View>
       ) : peersError ? (
         <View style={styles.centerContainer}>
           <EmptyState 
-            icon={<Ionicons name="alert-circle-outline" size={48} color={theme.colors.error} />} 
+            icon={<Ionicons name="alert-circle-outline" size={48} color={colors.error} />} 
             title="Failed to Load Peers" 
             description={peersError.message} 
           />
@@ -98,7 +101,7 @@ export const HomeScreen: React.FC = () => {
       ) : peers.length === 0 ? (
         <View style={styles.centerContainer}>
           <EmptyState 
-            icon={<Ionicons name="people-outline" size={48} color={theme.colors.text.secondary} />} 
+            icon={<Ionicons name="people-outline" size={48} color={colors.text.secondary} />} 
             title="No One Nearby" 
             description="Try expanding your search radius to find people close to you." 
           />
@@ -112,7 +115,7 @@ export const HomeScreen: React.FC = () => {
           )}
           contentContainerStyle={styles.listContainer}
           refreshControl={
-            <RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={theme.colors.primary.main} />
+            <RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={colors.primary.main} />
           }
         />
       ) : (
@@ -121,7 +124,6 @@ export const HomeScreen: React.FC = () => {
             <View style={styles.radarRingMedium}>
               <View style={styles.radarRingSmall}>
                 <View style={styles.radarCenterDot} />
-              </View>
               </View>
             </View>
           </View>
@@ -149,33 +151,33 @@ export const HomeScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     padding: 24,
   },
   loadingText: {
-    color: theme.colors.text.secondary,
+    color: colors.text.secondary,
     marginTop: 12,
     fontSize: 14,
   },
   filterSection: {
     padding: 16,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    borderBottomColor: colors.border,
   },
   tabRow: {
     flexDirection: 'row',
     marginTop: 12,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     borderRadius: 8,
     padding: 4,
   },
@@ -189,10 +191,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   activeTabButton: {
-    backgroundColor: theme.colors.primary.main,
+    backgroundColor: colors.primary.main,
   },
   tabButtonText: {
-    color: theme.colors.text.secondary,
+    color: colors.text.secondary,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -212,7 +214,7 @@ const styles = StyleSheet.create({
     height: 300,
     borderRadius: 150,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -221,7 +223,7 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 100,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -230,7 +232,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -238,7 +240,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: theme.colors.primary.main,
+    backgroundColor: colors.primary.main,
   },
   radarPeerNode: {
     position: 'absolute',
@@ -246,7 +248,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   button: {
-    backgroundColor: theme.colors.primary.main,
+    backgroundColor: colors.primary.main,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
