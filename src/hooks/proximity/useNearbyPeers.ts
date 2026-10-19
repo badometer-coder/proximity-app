@@ -3,8 +3,10 @@ import { supabase } from '../../config/supabase';
 import { GPSCoordinates, FormattedNearbyPeer, ApiError } from '../../types';
 import { formatDistance, getSignalStrength, getPresenceStatus } from '../../lib/utils';
 import { useAuth } from '../auth/useAuth';
+import { useBluetoothProximity } from './useBluetoothProximity';
 
 export const useNearbyPeers = (location: GPSCoordinates | null) => {
+  const { discoveredDevices } = useBluetoothProximity();
   const [peers, setPeers] = useState<FormattedNearbyPeer[]>([]);
   const [selectedRadius, setSelectedRadius] = useState<number>(500); // default 500 meters
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -81,8 +83,24 @@ export const useNearbyPeers = (location: GPSCoordinates | null) => {
   }, [selectedRadius, user]);
 
   useEffect(() => {
-    fetchPeers();
-  }, [fetchPeers]);
+    if (discoveredDevices.length > 0) {
+      // Map BLE devices to the peers structure
+      const blePeers: FormattedNearbyPeer[] = discoveredDevices.map((device: any) => ({
+        id: device.id,
+        username: device.localName || 'Unknown',
+        full_name: device.name || 'Nearby Device',
+        age: 0,
+        avatar_url: null,
+        is_ble_discoverable: true,
+        distance_meters: 0,
+        last_active_at: new Date().toISOString(),
+        formatted_distance: 'Nearby',
+        signal_strength: 'excellent',
+        presence_status: 'online',
+      }));
+      setPeers(blePeers);
+    }
+  }, [discoveredDevices]);
 
   useEffect(() => {
     if (location) {

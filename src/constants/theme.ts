@@ -1,27 +1,27 @@
 export const colors = {
-  background: '#000000',
-  surface: '#111111',
-  surfaceLight: '#1A1A1A',
+  background: '#FFFFFF',
+  surface: '#FFFFFF',
+  surfaceLight: '#F3F4F6',
   primary: {
     main: '#6366F1',
     dark: '#4F46E5',
     light: '#818CF8',
   },
   text: {
-    primary: '#F9FAFB',
-    secondary: '#9CA3AF',
-    tertiary: '#6B7280',
-    inverse: '#111827',
+    primary: '#111827',
+    secondary: '#6B7280',
+    tertiary: '#9CA3AF',
+    inverse: '#F9FAFB',
   },
-  border: '#374151',
-  borderLight: '#4B5563',
-  divider: '#1F2937',
+  border: '#E5E7EB',
+  borderLight: '#F3F4F6',
+  divider: '#E5E7EB',
   orange: '#F97316',
   success: '#10B981',
   error: '#EF4444',
   warning: '#F59E0B',
   info: '#3B82F6',
-  overlay: 'rgba(0, 0, 0, 0.7)',
+  overlay: 'rgba(0, 0, 0, 0.5)',
 } as const;
 
 export const spacing = {
