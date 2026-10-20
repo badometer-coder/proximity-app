@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/auth/useAuth';
 import { useTheme } from '../../context/ThemeContext';
@@ -14,8 +14,8 @@ export const HomeScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerRow}>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
         <Text style={styles.headerTitle}>Proximity</Text>
         <TouchableOpacity style={styles.toggleButton} onPress={toggle} activeOpacity={0.7}>
           <Ionicons 
@@ -27,37 +27,36 @@ export const HomeScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
+      <View style={styles.container}>
         <View style={styles.iconContainer}>
           <Text style={styles.icon}>📍</Text>
         </View>
 
-        <Text style={styles.title}>Welcome back</Text>
-        <Text style={styles.subtitle}>You are successfully connected on Proximity.</Text>
+        <Text style={styles.title}>Welcome Back</Text>
+        <Text style={styles.subtitle}>You are successfully logged in and connected.</Text>
 
-        <TouchableOpacity style={styles.button} onPress={handleSignOut}>
+        <TouchableOpacity style={styles.button} onPress={handleSignOut} activeOpacity={0.8}>
           <Text style={styles.buttonText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const getStyles = (colors: any) => StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background,
   },
-  headerRow: {
+  header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 16,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
   },
   headerTitle: {
     fontSize: 20,
@@ -80,8 +79,9 @@ const getStyles = (colors: any) => StyleSheet.create({
     fontWeight: '600',
     color: colors.text.primary,
   },
-  content: {
+  container: {
     flex: 1,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
