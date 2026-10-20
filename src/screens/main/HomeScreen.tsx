@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/auth/useAuth';
 import { useTheme } from '../../context/ThemeContext';
@@ -14,9 +14,12 @@ export const HomeScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Proximity</Text>
+        <View style={styles.headerLeft}>
+          <View style={styles.onlineDot} />
+          <Text style={styles.headerTitle}>Proximity</Text>
+        </View>
         <TouchableOpacity style={styles.toggleButton} onPress={toggle} activeOpacity={0.7}>
           <Ionicons 
             name={mode === 'dark' ? "sunny" : "moon"} 
@@ -27,24 +30,24 @@ export const HomeScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
+      <View style={styles.container}>
         <View style={styles.iconContainer}>
           <Text style={styles.icon}>📍</Text>
         </View>
 
-        <Text style={styles.title}>Proximity</Text>
-        <Text style={styles.subtitle}>You are successfully logged in.</Text>
+        <Text style={styles.title}>Welcome Back</Text>
+        <Text style={styles.subtitle}>You are successfully logged in and connected via Proximity GPS.</Text>
 
-        <TouchableOpacity style={styles.button} onPress={handleSignOut}>
+        <TouchableOpacity style={styles.button} onPress={handleSignOut} activeOpacity={0.8}>
           <Text style={styles.buttonText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const getStyles = (colors: any) => StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background,
   },
@@ -52,15 +55,25 @@ const getStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingTop: 64,
-    paddingBottom: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+    onlineDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.success,
+  },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.text.primary,
   },
@@ -80,8 +93,9 @@ const getStyles = (colors: any) => StyleSheet.create({
     fontWeight: '600',
     color: colors.text.primary,
   },
-  content: {
+  container: {
     flex: 1,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
