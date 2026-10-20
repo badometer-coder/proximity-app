@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../hooks/auth/useAuth';
+import { useAuth } from '../../hooks/auth/useAuth';
 import { useTheme } from '../../context/ThemeContext';
 
 export const HomeScreen: React.FC = () => {
@@ -15,14 +15,15 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.themeToggle} onPress={toggle} activeOpacity={0.7}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Proximity</Text>
+        <TouchableOpacity style={styles.toggleButton} onPress={toggle} activeOpacity={0.7}>
           <Ionicons 
             name={mode === 'dark' ? "sunny" : "moon"} 
-            size={20} 
+            size={18} 
             color={mode === 'dark' ? "#FBBF24" : "#6366F1"} 
           />
-          <Text style={styles.themeToggleText}>{mode === 'dark' ? 'Day Mode' : 'Night Mode'}</Text>
+          <Text style={styles.toggleText}>{mode === 'dark' ? 'Day' : 'Night'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -47,31 +48,35 @@ const getStyles = (colors: any) => StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 10,
-  },
-  themeToggle: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingTop: 64,
+    paddingBottom: 16,
     backgroundColor: colors.surface,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text.primary,
+  },
+  toggleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surfaceLight,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.border,
-    gap: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    gap: 6,
   },
-  themeToggleText: {
-    fontSize: 14,
+  toggleText: {
+    fontSize: 12,
     fontWeight: '600',
     color: colors.text.primary,
   },
