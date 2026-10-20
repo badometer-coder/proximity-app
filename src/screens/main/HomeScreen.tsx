@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/auth/useAuth';
 import { useTheme } from '../../context/ThemeContext';
@@ -14,19 +14,22 @@ export const HomeScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>Proximity</Text>
+        </View>
         <TouchableOpacity style={styles.toggleButton} onPress={toggle} activeOpacity={0.7}>
           <Ionicons 
             name={mode === 'dark' ? "sunny" : "moon"} 
-            size={20} 
+            size={18} 
             color={mode === 'dark' ? "#FBBF24" : "#6366F1"} 
           />
-          <Text style={styles.toggleText}>{mode === 'dark' ? 'Day Mode' : 'Night Mode'}</Text>
+          <Text style={styles.toggleText}>{mode === 'dark' ? 'Day' : 'Night'}</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
+      <View style={styles.container}>
         <View style={styles.iconContainer}>
           <Text style={styles.icon}>📍</Text>
         </View>
@@ -38,38 +41,53 @@ export const HomeScreen: React.FC = () => {
           <Text style={styles.buttonText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const getStyles = (colors: any) => StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background,
   },
   header: {
-    paddingTop: 54,
-    paddingHorizontal: 24,
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  headerTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text.primary,
   },
   toggleButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    backgroundColor: colors.surfaceLight,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.border,
-    gap: 8,
+    gap: 6,
   },
   toggleText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: colors.text.primary,
   },
-  content: {
+  container: {
     flex: 1,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
