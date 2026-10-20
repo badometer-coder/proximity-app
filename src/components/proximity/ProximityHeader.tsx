@@ -6,30 +6,50 @@ import { formatRelativeTime } from '../../lib/utils';
 import { useTheme } from '../../context/ThemeContext';
 
 export const ProximityHeader = ({ lastUpdated }: { lastUpdated: string | null }) => {
-  const { mode, toggle } = useTheme();
+  const { mode, toggle, colors } = useTheme();
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: theme.colors.success }} />
+        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.success }} />
         <View>
-          <Text style={styles.modeText}>ONLINE GPS Mode</Text>
-          {lastUpdated && <Text style={styles.timeText}>Updated {formatRelativeTime(lastUpdated)}</Text>}
+          <Text style={[styles.modeText, { color: colors.text.primary }]}>ONLINE GPS Mode</Text>
+          {lastUpdated && <Text style={[styles.timeText, { color: colors.text.tertiary }]}>Updated {formatRelativeTime(lastUpdated)}</Text>}
         </View>
       </View>
-      <TouchableOpacity onPress={toggle}>
+      <TouchableOpacity 
+        onPress={toggle} 
+        style={[styles.toggleButton, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}
+        activeOpacity={0.7}
+      >
         <Ionicons 
-          name={mode === 'dark' ? "sunny-outline" : "moon-outline"} 
-          size={20} 
-          color={theme.colors.text.primary} 
+          name={mode === 'dark' ? "sunny" : "moon"} 
+          size={18} 
+          color={mode === 'dark' ? '#F59E0B' : '#6366F1'} 
         />
+        <Text style={[styles.toggleText, { color: colors.text.primary }]}>
+          {mode === 'dark' ? 'Day' : 'Night'}
+        </Text>
       </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: theme.colors.surface, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
-  modeText: { fontSize: 13, fontWeight: '600', color: theme.colors.text.primary },
-  timeText: { fontSize: 11, color: theme.colors.text.tertiary, marginTop: 2 },
+  container: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1 },
+  modeText: { fontSize: 13, fontWeight: '600' },
+  timeText: { fontSize: 11, marginTop: 2 },
+  toggleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  toggleText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
 });
