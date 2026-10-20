@@ -1,6 +1,6 @@
 export const colors = {
-  background: '#FFFFFF',
-  surface: '#F9FAFB',
+  background: '#F9FAFB',
+  surface: '#FFFFFF',
   surfaceLight: '#F3F4F6',
   primary: {
     main: '#6366F1',
@@ -11,7 +11,7 @@ export const colors = {
     primary: '#111827',
     secondary: '#6B7280',
     tertiary: '#9CA3AF',
-    inverse: '#FFFFFF',
+    inverse: '#F9FAFB',
   },
   border: '#E5E7EB',
   borderLight: '#F3F4F6',
@@ -53,7 +53,6 @@ export const typography = {
   },
 } as const;
 
-// Named export so screens can do: import { theme } from '../../constants/theme'
 export const theme = {
   colors,
   spacing,
