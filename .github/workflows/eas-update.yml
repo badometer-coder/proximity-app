@@ -31,7 +31,7 @@ jobs:
         run: npx tsc --noEmit --skipLibCheck 2>&1 | tee /tmp/tsc-output.txt; exit ${PIPESTATUS[0]}
 
       - name: Publish update
-        run: eas update --auto --non-interactive
+        run: eas update --channel preview --message "${{ github.event.head_commit.message }}" --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
