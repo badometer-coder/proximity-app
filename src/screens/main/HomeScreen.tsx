@@ -15,7 +15,7 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerRow}>
+      <View style={styles.header}>
         <Text style={styles.headerTitle}>Proximity</Text>
         <TouchableOpacity style={styles.toggleButton} onPress={toggle} activeOpacity={0.7}>
           <Ionicons 
@@ -48,10 +48,10 @@ const getStyles = (colors: any) => StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  headerRow: {
+  header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 16,
