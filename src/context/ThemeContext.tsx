@@ -40,13 +40,13 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  mode: 'dark',
-  colors: darkColors,
+  mode: 'light',
+  colors: lightColors,
   toggle: () => {},
 });
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }: { children: ReactNode }) => {
-  const [mode, setMode] = useState<ThemeMode>('dark');
+  const [mode, setMode] = useState<ThemeMode>('light');
   const colors = mode === 'dark' ? darkColors : lightColors;
   const toggle = () => setMode((m: ThemeMode) => m === 'dark' ? 'light' : 'dark');
   return (
