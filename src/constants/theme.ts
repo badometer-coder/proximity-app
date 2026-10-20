@@ -53,6 +53,7 @@ export const typography = {
   },
 } as const;
 
+// Named export so screens can do: import { theme } from '../../constants/theme'
 export const theme = {
   colors,
   spacing,
