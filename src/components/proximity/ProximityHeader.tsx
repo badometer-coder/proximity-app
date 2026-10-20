@@ -4,28 +4,36 @@ import { Ionicons } from '@expo/vector-icons';
 import { formatRelativeTime } from '../../lib/utils';
 import { useTheme } from '../../context/ThemeContext';
 
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { formatRelativeTime } from '../../lib/utils';
+import { useTheme } from '../../context/ThemeContext';
+
 export const ProximityHeader = ({ lastUpdated }: { lastUpdated: string | null }) => {
   const { mode, toggle, colors } = useTheme();
   const styles = getStyles(colors);
   
   return (
-    <View style={styles.container}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.success }} />
-        <View>
-          <Text style={styles.modeText}>ONLINE GPS Mode</Text>
-          {lastUpdated && <Text style={styles.timeText}>Updated {formatRelativeTime(lastUpdated)}</Text>}
+    <SafeAreaView style={{ backgroundColor: colors.surface }}>
+      <View style={styles.container}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.success }} />
+          <View>
+            <Text style={styles.modeText}>ONLINE GPS Mode</Text>
+            {lastUpdated && <Text style={styles.timeText}>Updated {formatRelativeTime(lastUpdated)}</Text>}
+          </View>
         </View>
+        <TouchableOpacity onPress={toggle} style={styles.toggleButton} activeOpacity={0.7}>
+          <Ionicons 
+            name={mode === 'dark' ? "sunny" : "moon"} 
+            size={18} 
+            color={mode === 'dark' ? "#FBBF24" : "#6366F1"} 
+          />
+          <Text style={styles.toggleText}>{mode === 'dark' ? 'Day' : 'Night'}</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity onPress={toggle} style={styles.toggleButton} activeOpacity={0.7}>
-        <Ionicons 
-          name={mode === 'dark' ? "sunny" : "moon"} 
-          size={18} 
-          color={mode === 'dark' ? "#FBBF24" : "#6366F1"} 
-        />
-        <Text style={styles.toggleText}>{mode === 'dark' ? 'Day' : 'Night'}</Text>
-      </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
