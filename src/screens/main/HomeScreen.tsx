@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../hooks/auth/useAuth';
+import { useAuth } from '../../hooks/auth/useAuth';
 import { useTheme } from '../../context/ThemeContext';
 
 export const HomeScreen: React.FC = () => {
@@ -32,8 +32,8 @@ export const HomeScreen: React.FC = () => {
           <Text style={styles.icon}>📍</Text>
         </View>
 
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>You are successfully logged in.</Text>
+        <Text style={styles.title}>Welcome back</Text>
+        <Text style={styles.subtitle}>You are successfully connected on Proximity.</Text>
 
         <TouchableOpacity style={styles.button} onPress={handleSignOut}>
           <Text style={styles.buttonText}>Sign Out</Text>
@@ -52,12 +52,12 @@ const getStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 60,
     paddingBottom: 16,
-    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    backgroundColor: colors.surface,
   },
   headerTitle: {
     fontSize: 20,
