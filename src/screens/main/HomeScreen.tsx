@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/auth/useAuth';
 import { useTheme } from '../../context/ThemeContext';
@@ -14,67 +14,54 @@ export const HomeScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <View style={styles.onlineDot} />
-          <Text style={styles.headerTitle}>Proximity</Text>
-        </View>
+        <Text style={styles.headerTitle}>Proximity Home</Text>
         <TouchableOpacity style={styles.toggleButton} onPress={toggle} activeOpacity={0.7}>
           <Ionicons 
             name={mode === 'dark' ? "sunny" : "moon"} 
-            size={18} 
+            size={20} 
             color={mode === 'dark' ? "#FBBF24" : "#6366F1"} 
           />
-          <Text style={styles.toggleText}>{mode === 'dark' ? 'Day' : 'Night'}</Text>
+          <Text style={styles.toggleText}>{mode === 'dark' ? 'Day Mode' : 'Night Mode'}</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.container}>
+      <View style={styles.content}>
         <View style={styles.iconContainer}>
           <Text style={styles.icon}>📍</Text>
         </View>
 
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>You are successfully connected on Proximity.</Text>
+        <Text style={styles.title}>Proximity</Text>
+        <Text style={styles.subtitle}>You are successfully logged in.</Text>
 
-        <TouchableOpacity style={styles.button} onPress={handleSignOut} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.button} onPress={handleSignOut}>
           <Text style={styles.buttonText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const getStyles = (colors: any) => StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingTop: 60,
+    paddingBottom: 16,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  onlineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.success,
-  },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: 'bold',
     color: colors.text.primary,
   },
   toggleButton: {
@@ -93,9 +80,8 @@ const getStyles = (colors: any) => StyleSheet.create({
     fontWeight: '600',
     color: colors.text.primary,
   },
-  container: {
+  content: {
     flex: 1,
-    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
