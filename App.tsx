@@ -6,7 +6,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider } from './src/context/AuthContext';
-import { ThemeProvider } from './src/context/ThemeContext';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { useAuth } from './src/hooks/auth/useAuth';
 import { LoginScreen } from './src/screens/auth/LoginScreen';
 import { ProfileSetupScreen } from './src/screens/auth/ProfileSetupScreen';
@@ -21,6 +21,7 @@ const Tab = createBottomTabNavigator();
 
 function ProfileSettingsScreen() {
   const { session, signOut } = useAuth();
+  const { colors } = useTheme();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -86,41 +87,40 @@ function ProfileSettingsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={theme.colors.primary.main} />
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary.main} />
       </View>
     );
   }
 
   return (
-    <View style={styles.profileContainer}>
-      <Text style={styles.title}>Profile & Settings</Text>
-        <View style={styles.card}>
-        <TouchableOpacity style={styles.avatarPlaceholder} onPress={handleChangeAvatar} disabled={isUploading}>
+    <View style={[styles.profileContainer, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text.primary }]}>Profile & Settings</Text>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <TouchableOpacity style={[styles.avatarPlaceholder, { backgroundColor: colors.surfaceLight }]} onPress={handleChangeAvatar} disabled={isUploading}>
           {isUploading ? (
-            <ActivityIndicator color={theme.colors.primary.main} />
+            <ActivityIndicator color={colors.primary.main} />
           ) : profile?.avatar_url ? (
             <Image source={{ uri: profile.avatar_url }} style={styles.avatarImage} />
           ) : (
-            <Ionicons name="person" size={50} color={theme.colors.text.secondary} />
+            <Ionicons name="person" size={50} color={colors.text.secondary} />
           )}
         </TouchableOpacity>
 
-        <Text style={styles.label}>Full Name</Text>
-        <Text style={styles.value}>{profile?.full_name || 'Not set'}</Text>
+        <Text style={[styles.label, { color: colors.text.secondary }]}>Full Name</Text>
+        <Text style={[styles.value, { color: colors.text.primary }]}>{profile?.full_name || 'Not set'}</Text>
 
-        <Text style={styles.label}>Username</Text>
-        <Text style={styles.value}>@{profile?.username || 'not_set'}</Text>
+        <Text style={[styles.label, { color: colors.text.secondary }]}>Username</Text>
+        <Text style={[styles.value, { color: colors.text.primary }]}>@{profile?.username || 'not_set'}</Text>
 
+        <Text style={[styles.label, { color: colors.text.secondary }]}>Email</Text>
+        <Text style={[styles.value, { color: colors.text.primary }]}>{session?.user?.email}</Text>
 
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>{session?.user?.email}</Text>
-
-        <Text style={styles.label}>Age</Text>
-        <Text style={styles.value}>{profile?.age || 'Not set'}</Text>
+        <Text style={[styles.label, { color: colors.text.secondary }]}>Age</Text>
+        <Text style={[styles.value, { color: colors.text.primary }]}>{profile?.age || 'Not set'}</Text>
       </View>
 
-      <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
+      <TouchableOpacity style={[styles.signOutButton, { backgroundColor: colors.error }]} onPress={signOut}>
         <Text style={styles.signOutText}>Sign Out</Text>
       </TouchableOpacity>
     </View>
@@ -150,24 +150,25 @@ function ChatStack() {
 }
 
 function MainTabNavigator() {
+  const { colors } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={({ route }: { route: { name: string } }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: theme.colors.surface,
-          borderTopColor: theme.colors.border,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
         },
-        tabBarActiveTintColor: theme.colors.primary.main,
-        tabBarInactiveTintColor: theme.colors.text.secondary,
+        tabBarActiveTintColor: colors.primary.main,
+        tabBarInactiveTintColor: colors.text.secondary,
         tabBarIcon: ({ focused, color, size }: { focused: boolean; color: string; size: number }) => {
-          let iconName: any = 'home'; // Fallback to any to avoid strict type issues
+          let iconName: any = 'home';
 
           if (route.name === 'HomeScreen') {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'ProximityFeedScreen') {
             iconName = focused ? 'radio' : 'radio-outline';
-          } else if (route.name === 'ChatThreadScreen') {
+          } else if (route.name === 'ChatStack') {
             iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
           } else if (route.name === 'ProfileSettings') {
             iconName = focused ? 'person' : 'person-outline';
@@ -203,6 +204,7 @@ function MainTabNavigator() {
 
 function RootNavigator() {
   const { session, loading } = useAuth();
+  const { colors } = useTheme();
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const [checkingProfile, setCheckingProfile] = useState(false);
 
@@ -231,8 +233,8 @@ function RootNavigator() {
 
   if (loading || checkingProfile) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={theme.colors.primary.main} />
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary.main} />
       </View>
     );
   }
@@ -259,7 +261,7 @@ export default function App() {
         const update = await Updates.checkForUpdateAsync();
         if (update.isAvailable) {
           await Updates.fetchUpdateAsync();
-          await Updates.reloadAsync(); // apply immediately
+          await Updates.reloadAsync();
         }
       } catch (e) {
         // ignore update errors in dev mode
@@ -282,41 +284,33 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.background,
   },
   profileContainer: {
     flex: 1,
-    backgroundColor: theme.colors.background,
     padding: 24,
     paddingTop: 64,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: theme.colors.text.primary,
     marginBottom: 24,
   },
   card: {
-    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     padding: 20,
     borderWidth: 1,
-    borderColor: theme.colors.border,
     marginBottom: 24,
   },
   label: {
     fontSize: 13,
-    color: theme.colors.text.secondary,
     marginBottom: 4,
     marginTop: 12,
   },
   value: {
     fontSize: 16,
-    color: theme.colors.text.primary,
     fontWeight: '500',
   },
   signOutButton: {
-    backgroundColor: theme.colors.error,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -329,7 +323,6 @@ const styles = StyleSheet.create({
   avatarPlaceholder: {
     alignItems: 'center',
     marginBottom: 16,
-    backgroundColor: theme.colors.surfaceLight,
     padding: 20,
     borderRadius: 60,
     width: 100,
