@@ -35,7 +35,8 @@ const getStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center', 
     justifyContent: 'space-between', 
     paddingHorizontal: 16, 
-    paddingVertical: 12, 
+    paddingTop: 16,
+    paddingBottom: 12, 
     backgroundColor: colors.surface, 
     borderBottomWidth: 1, 
     borderBottomColor: colors.border 
