@@ -1,7 +1,7 @@
 export const colors = {
-  background: '#FFFFFF',
-  surface: '#FFFFFF',
-  surfaceLight: '#F3F4F6',
+  background: '#000000',
+  surface: '#111111',
+  surfaceLight: '#1A1A1A',
   primary: {
     main: '#6366F1',
     dark: '#4F46E5',
