@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
+import * as Updates from 'expo-updates';
 import * as ImagePicker from 'expo-image-picker';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -252,6 +253,21 @@ function RootNavigator() {
 }
 
 export default function App() {
+  useEffect(() => {
+    async function checkForUpdates() {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync();
+          await Updates.reloadAsync(); // apply immediately
+        }
+      } catch (e) {
+        // ignore update errors in dev mode
+      }
+    }
+    checkForUpdates();
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>
