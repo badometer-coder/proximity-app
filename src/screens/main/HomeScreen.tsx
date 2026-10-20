@@ -47,7 +47,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingTop: 12,
+    paddingTop: 36,
   },
   header: {
     flexDirection: 'row',
