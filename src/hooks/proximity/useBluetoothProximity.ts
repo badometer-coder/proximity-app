@@ -1,15 +1,32 @@
 import { useEffect, useState } from 'react';
-import { BleManager, Device } from 'react-native-ble-plx';
 import { Platform, PermissionsAndroid } from 'react-native';
 
-const bleManager = new BleManager();
+// react-native-ble-plx is a native module — not available in Expo Go
+// Wrap in try/catch so app doesn't crash when scanned with Expo Go
+let BleManager: any = null;
+try {
+  const ble = require('react-native-ble-plx');
+  BleManager = ble.BleManager;
+} catch (e) {
+  console.log('BLE not available in this environment (Expo Go)');
+}
 
 export const useBluetoothProximity = () => {
-  const [discoveredDevices, setDiscoveredDevices] = useState<Device[]>([]);
+  const [discoveredDevices, setDiscoveredDevices] = useState<any[]>([]);
   const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
-    // Permission check for Android
+    // BLE not available in Expo Go — skip silently
+    if (!BleManager) return;
+
+    let manager: any;
+    try {
+      manager = new BleManager();
+    } catch (e) {
+      console.log('BleManager init failed:', e);
+      return;
+    }
+
     if (Platform.OS === 'android') {
       PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -18,29 +35,28 @@ export const useBluetoothProximity = () => {
       ]);
     }
 
-    const subscription = bleManager.onStateChange((state) => {
-      if (state === 'PoweredOn') scanForDevices();
+    const subscription = manager.onStateChange((state: string) => {
+      if (state === 'PoweredOn') scanForDevices(manager);
     }, true);
 
     return () => {
       subscription.remove();
-      bleManager.stopDeviceScan();
+      manager.stopDeviceScan();
     };
   }, []);
 
-  const scanForDevices = () => {
+  const scanForDevices = (manager: any) => {
     setIsScanning(true);
     setDiscoveredDevices([]);
-    
-    bleManager.startDeviceScan(null, null, (error, device) => {
+
+    manager.startDeviceScan(null, null, (error: any, device: any) => {
       if (error) {
         console.error(error);
         return;
       }
-      
       if (device && device.localName) {
         setDiscoveredDevices(prev => {
-          if (!prev.find(d => d.id === device.id)) return [...prev, device];
+          if (!prev.find((d: any) => d.id === device.id)) return [...prev, device];
           return prev;
         });
       }
