@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export const lightColors = {
-  background: '#F9FAFB',
-  surface: '#FFFFFF',
+  background: '#FFFFFF',
+  surface: '#F9FAFB',
   surfaceLight: '#F3F4F6',
   primary: { main: '#6366F1', dark: '#4F46E5', light: '#818CF8' },
-  text: { primary: '#111827', secondary: '#6B7280', tertiary: '#9CA3AF', inverse: '#F9FAFB' },
+  text: { primary: '#111827', secondary: '#6B7280', tertiary: '#9CA3AF', inverse: '#FFFFFF' },
   border: '#E5E7EB',
   borderLight: '#F3F4F6',
   success: '#10B981',
