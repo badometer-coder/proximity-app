@@ -1,11 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { formatRelativeTime } from '../../lib/utils';
-import { useTheme } from '../../context/ThemeContext';
-
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { formatRelativeTime } from '../../lib/utils';
 import { useTheme } from '../../context/ThemeContext';
@@ -43,7 +37,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center', 
     justifyContent: 'space-between', 
     paddingHorizontal: 16, 
-    paddingTop: 16,
+    paddingTop: 12,
     paddingBottom: 12, 
     backgroundColor: colors.surface, 
     borderBottomWidth: 1, 
