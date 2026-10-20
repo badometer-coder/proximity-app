@@ -1,101 +1,77 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../hooks/auth/useAuth';
+import { useAuth } from '../hooks/auth/useAuth';
 import { useTheme } from '../../context/ThemeContext';
 
 export const HomeScreen: React.FC = () => {
   const { signOut } = useAuth();
   const { mode, toggle, colors } = useTheme();
-  const styles = getStyles(colors);
 
   const handleSignOut = async () => {
     await signOut();
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <View style={styles.onlineDot} />
-          <Text style={styles.headerTitle}>Proximity</Text>
-        </View>
-        <TouchableOpacity style={styles.toggleButton} onPress={toggle} activeOpacity={0.7}>
+        <TouchableOpacity 
+          style={[styles.toggleButton, { backgroundColor: colors.surface, borderColor: colors.border }]} 
+          onPress={toggle} 
+          activeOpacity={0.7}
+        >
           <Ionicons 
             name={mode === 'dark' ? "sunny" : "moon"} 
-            size={18} 
+            size={20} 
             color={mode === 'dark' ? "#FBBF24" : "#6366F1"} 
           />
-          <Text style={styles.toggleText}>{mode === 'dark' ? 'Day' : 'Night'}</Text>
+          <Text style={[styles.toggleText, { color: colors.text.primary }]}>
+            {mode === 'dark' ? 'Day Mode' : 'Night Mode'}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.container}>
-        <View style={styles.iconContainer}>
+      <View style={styles.content}>
+        <View style={[styles.iconContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={styles.icon}>📍</Text>
         </View>
 
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>You are successfully logged in and connected via Proximity GPS.</Text>
+        <Text style={[styles.title, { color: colors.text.primary }]}>Proximity</Text>
+        <Text style={[styles.subtitle, { color: colors.text.secondary }]}>You are successfully logged in.</Text>
 
-        <TouchableOpacity style={styles.button} onPress={handleSignOut} activeOpacity={0.8}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary.main }]} onPress={handleSignOut}>
           <Text style={styles.buttonText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
-const getStyles = (colors: any) => StyleSheet.create({
-  safeArea: {
+const styles = StyleSheet.create({
+  container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     paddingHorizontal: 20,
-    paddingVertical: 14,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-    onlineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.success,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.text.primary,
+    paddingTop: 60,
   },
   toggleButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceLight,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: colors.border,
-    gap: 6,
+    gap: 8,
   },
   toggleText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.text.primary,
   },
-  container: {
+  content: {
     flex: 1,
-    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
@@ -104,12 +80,10 @@ const getStyles = (colors: any) => StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   icon: {
     fontSize: 36,
@@ -117,18 +91,15 @@ const getStyles = (colors: any) => StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: colors.text.primary,
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: colors.text.secondary,
     marginBottom: 40,
     textAlign: 'center',
   },
   button: {
-    backgroundColor: colors.primary.main,
     paddingVertical: 14,
     paddingHorizontal: 32,
     borderRadius: 8,
