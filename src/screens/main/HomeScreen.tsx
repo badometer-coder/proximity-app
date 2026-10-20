@@ -15,7 +15,17 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Header hidden */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Proximity</Text>
+        <TouchableOpacity style={styles.toggleButton} onPress={toggle} activeOpacity={0.7}>
+          <Ionicons 
+            name={mode === 'dark' ? "sunny" : "moon"} 
+            size={18} 
+            color={mode === 'dark' ? "#FBBF24" : "#6366F1"} 
+          />
+          <Text style={styles.toggleText}>{mode === 'dark' ? 'Day' : 'Night'}</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.container}>
         <View style={styles.iconContainer}>
