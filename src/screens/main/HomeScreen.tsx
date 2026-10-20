@@ -15,15 +15,15 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={styles.headerRow}>
         <Text style={styles.headerTitle}>Proximity</Text>
         <TouchableOpacity style={styles.toggleButton} onPress={toggle} activeOpacity={0.7}>
           <Ionicons 
             name={mode === 'dark' ? "sunny" : "moon"} 
-            size={20} 
+            size={18} 
             color={mode === 'dark' ? "#FBBF24" : "#6366F1"} 
           />
-          <Text style={styles.toggleText}>{mode === 'dark' ? 'Day Mode' : 'Night Mode'}</Text>
+          <Text style={styles.toggleText}>{mode === 'dark' ? 'Day' : 'Night'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -32,7 +32,7 @@ export const HomeScreen: React.FC = () => {
           <Text style={styles.icon}>📍</Text>
         </View>
 
-        <Text style={styles.title}>Proximity</Text>
+        <Text style={styles.title}>Welcome Back</Text>
         <Text style={styles.subtitle}>You are successfully logged in.</Text>
 
         <TouchableOpacity style={styles.button} onPress={handleSignOut}>
@@ -48,16 +48,16 @@ const getStyles = (colors: any) => StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
+  headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 16,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
   },
   headerTitle: {
     fontSize: 20,
@@ -68,15 +68,15 @@ const getStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surfaceLight,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.border,
     gap: 6,
   },
   toggleText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: colors.text.primary,
   },
