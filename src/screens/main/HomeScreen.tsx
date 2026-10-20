@@ -16,8 +16,8 @@ export const HomeScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerEmoji}>📍</Text>
+        <View style={styles.headerLeft}>
+          <View style={styles.onlineDot} />
           <Text style={styles.headerTitle}>Proximity</Text>
         </View>
         <TouchableOpacity style={styles.toggleButton} onPress={toggle} activeOpacity={0.7}>
@@ -35,8 +35,8 @@ export const HomeScreen: React.FC = () => {
           <Text style={styles.icon}>📍</Text>
         </View>
 
-        <Text style={styles.title}>Welcome back</Text>
-        <Text style={styles.subtitle}>You are successfully logged in and connected.</Text>
+        <Text style={styles.title}>Welcome Back</Text>
+        <Text style={styles.subtitle}>You are successfully connected on Proximity.</Text>
 
         <TouchableOpacity style={styles.button} onPress={handleSignOut} activeOpacity={0.8}>
           <Text style={styles.buttonText}>Sign Out</Text>
@@ -57,21 +57,24 @@ const getStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 14,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
   },
-  headerTitleContainer: {
+  headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  headerEmoji: {
-    fontSize: 20,
+  onlineDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.success,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '700',
     color: colors.text.primary,
   },
   toggleButton: {
