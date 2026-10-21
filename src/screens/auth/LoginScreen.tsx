@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFF',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.5
