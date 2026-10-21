@@ -127,11 +127,11 @@ const styles = StyleSheet.create({
   googleButton: {
     backgroundColor: '#4285F4',
   },
-  buttonTextOutline: { 
-    color: '#FFFFFF', 
-    fontSize: 16, 
+  buttonTextOutline: {
+    color: '#FFFFFF',
+    fontSize: 13,
     fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 1
+    letterSpacing: 0.5
   },
 });
