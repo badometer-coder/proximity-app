@@ -1,15 +1,12 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { formatRelativeTime } from '../../lib/utils';
 import { useTheme } from '../../context/ThemeContext';
-
 export const ProximityHeader = ({ lastUpdated }: { lastUpdated: string | null }) => {
   const { mode, toggle, colors } = useTheme();
-  const styles = getStyles(colors);
-  
-  return (
-    <SafeAreaView style={{ backgroundColor: colors.surface }}>
+  const insets = useSafe: colors.surface }}>
       <View style={styles.container}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.success }} />
