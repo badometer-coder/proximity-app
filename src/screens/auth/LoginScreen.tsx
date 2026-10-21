@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { useAuth } from '../../hooks/auth/useAuth';
-import { theme } from '../../constants/theme';
 
+import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { theme } from '../../constants/theme';
+import { useAuth } from '../../hooks/auth/useAuth';
 export const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('test@test.com');
   const [password, setPassword] = useState('Password123!');
@@ -99,26 +98,26 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1
   },
-  button: { 
-    backgroundColor: theme.colors.primary.main, 
-    padding: 18, 
-    borderRadius: 16, 
-    alignItems: 'center', 
-    marginBottom: 16,
+  button: {
+    backgroundColor: theme.colors.primary.main,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 12,
     shadowColor: theme.colors.primary.main,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3
   },
-  buttonText: { 
-    color: '#FFF', 
-    fontSize: 16, 
+  buttonText: {
+    color: '#FFF',
+    fontSize: 13,
     fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 1
+    letterSpacing: 0.5
   },
-  buttonOutline: { 
+  buttonOutline: {
     backgroundColor: '#FF3B30', 
     borderWidth: 0, 
     padding: 18,
