@@ -55,7 +55,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 24,
-    paddingBottom: 16,
+    paddingBottom: 20,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -102,7 +102,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   icon: {
     fontSize: 36,
   },
-    title: {
+  title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: colors.text.primary,
