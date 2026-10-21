@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: theme.colors.primary.main,
-    padding: 8,
+    padding: 6,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 8,
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFF',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.5
