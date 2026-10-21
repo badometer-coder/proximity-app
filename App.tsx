@@ -257,14 +257,23 @@ function RootNavigator() {
 export default function App() {
   useEffect(() => {
     async function checkForUpdates() {
+      if (__DEV__) {
+        console.log('Running in development mode — OTA updates skipped.');
+        return;
+      }
       try {
+        console.log('Checking for OTA updates...');
         const update = await Updates.checkForUpdateAsync();
         if (update.isAvailable) {
+          console.log('Update available, fetching...');
           await Updates.fetchUpdateAsync();
+          console.log('Update fetched, reloading app...');
           await Updates.reloadAsync();
+        } else {
+          console.log('App is up to date.');
         }
-      } catch (e) {
-        // ignore update errors in dev mode
+      } catch (e: any) {
+        console.error('Error checking for updates:', e?.message || e);
       }
     }
     checkForUpdates();
