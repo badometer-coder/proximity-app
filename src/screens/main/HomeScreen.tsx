@@ -123,7 +123,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
-    buttonText: {
+  buttonText: {
     color: '#FFF',
     fontSize: 16,
     fontWeight: '600',
