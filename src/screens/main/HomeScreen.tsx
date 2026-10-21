@@ -65,7 +65,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     fontWeight: 'bold',
     color: colors.text.primary,
   },
-    toggleButton: {
+  toggleButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surfaceLight,
