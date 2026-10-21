@@ -119,9 +119,9 @@ const styles = StyleSheet.create({
   },
   buttonOutline: {
     backgroundColor: '#FF3B30', 
-    borderWidth: 0, 
-    padding: 18,
-    borderRadius: 16,
+    borderWidth: 0,
+    padding: 12,
+    borderRadius: 12,
     alignItems: 'center'
   },
   googleButton: {
