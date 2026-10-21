@@ -123,6 +123,26 @@ function ProfileSettingsScreen() {
       <TouchableOpacity style={[styles.signOutButton, { backgroundColor: colors.error }]} onPress={signOut}>
         <Text style={styles.signOutText}>Sign Out</Text>
       </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.signOutButton, { backgroundColor: colors.primary.main, marginTop: 12 }]}
+        onPress={async () => {
+          try {
+            Alert.alert('Checking...', 'Looking for updates');
+            const update = await Updates.checkForUpdateAsync();
+            if (update.isAvailable) {
+              Alert.alert('Update found!', 'Downloading and applying update...');
+              await Updates.fetchUpdateAsync();
+              await Updates.reloadAsync();
+            } else {
+              Alert.alert('Up to date', 'No updates available');
+            }
+          } catch (e: any) {
+            Alert.alert('Update error', e?.message || 'Could not check for updates');
+          }
+        }}
+      >
+        <Text style={styles.signOutText}>Check for Updates</Text>
+      </TouchableOpacity>
     </View>
   );
 }
