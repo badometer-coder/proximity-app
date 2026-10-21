@@ -1,4 +1,5 @@
 
+import React, { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../hooks/auth/useAuth';
