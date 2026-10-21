@@ -100,7 +100,8 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: theme.colors.primary.main,
-    padding: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 8,
@@ -112,17 +113,20 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFF',
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.5
   },
   buttonOutline: {
-    backgroundColor: '#FF3B30', 
-    borderWidth: 0,
-    padding: 6,
-    borderRadius: 12,
-    alignItems: 'center'
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: theme.colors.primary.main,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 8,
   },
   googleButton: {
     backgroundColor: '#4285F4',
