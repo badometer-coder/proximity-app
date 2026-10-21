@@ -47,15 +47,15 @@ const getStyles = (colors: any) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 36 : 0,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 36 : 12,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
