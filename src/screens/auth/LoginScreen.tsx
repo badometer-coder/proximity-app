@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   buttonOutline: {
     backgroundColor: '#FF3B30', 
     borderWidth: 0,
-    padding: 12,
+    padding: 6,
     borderRadius: 12,
     alignItems: 'center'
   },
