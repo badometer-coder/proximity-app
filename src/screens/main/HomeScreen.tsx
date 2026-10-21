@@ -47,13 +47,14 @@ const getStyles = (colors: any) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.background,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 40 : 0,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 16 : 16,
+    paddingTop: 16,
     paddingBottom: 16,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
@@ -101,7 +102,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   icon: {
     fontSize: 36,
   },
-  title: {
+    title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: colors.text.primary,
