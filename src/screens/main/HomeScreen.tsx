@@ -47,14 +47,14 @@ const getStyles = (colors: any) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 60 : 0,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 64 : 0,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 24,
     paddingBottom: 20,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
@@ -76,7 +76,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     borderColor: colors.border,
     gap: 6,
   },
-    toggleText: {
+  toggleText: {
     fontSize: 12,
     fontWeight: '600',
     color: colors.text.primary,
@@ -102,7 +102,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   icon: {
     fontSize: 36,
   },
-  title: {
+    title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: colors.text.primary,
