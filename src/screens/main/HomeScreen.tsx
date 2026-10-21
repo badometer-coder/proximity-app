@@ -65,7 +65,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     fontWeight: 'bold',
     color: colors.text.primary,
   },
-  toggleButton: {
+    toggleButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surfaceLight,
@@ -102,7 +102,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   icon: {
     fontSize: 36,
   },
-    title: {
+  title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: colors.text.primary,
