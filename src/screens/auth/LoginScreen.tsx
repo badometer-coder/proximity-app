@@ -100,15 +100,15 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: theme.colors.primary.main,
-    padding: 12,
-    borderRadius: 12,
+    padding: 10,
+    borderRadius: 10,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
     shadowColor: theme.colors.primary.main,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 3
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2
   },
   buttonText: {
     color: '#FFF',
