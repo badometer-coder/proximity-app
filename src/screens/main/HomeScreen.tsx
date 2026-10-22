@@ -118,10 +118,10 @@ const getStyles = (colors: any) => StyleSheet.create({
   button: {
     backgroundColor: colors.primary.main,
     paddingVertical: 14,
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
-    width: '100%',
+    width: '80%',
   },
   buttonText: {
     color: '#FFF',
