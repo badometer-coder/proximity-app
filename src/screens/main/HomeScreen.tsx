@@ -121,7 +121,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
-    width: '80%',
+    width: '60%',
   },
   buttonText: {
     color: '#FFF',
