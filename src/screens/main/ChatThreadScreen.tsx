@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { useChatMessages } from '../../hooks/messaging/useChatMessages';
-import { theme } from '../../constants/theme';
-import { ChatMessage } from '../../types';
 
+import { ChatMessage } from '../../types';
+import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { theme } from '../../constants/theme';
+import { useChatMessages } from '../../hooks/messaging/useChatMessages';
 interface ChatThreadScreenProps {
   peerId: string;
   peerName: string;
@@ -146,8 +145,8 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     backgroundColor: theme.colors.primary.main,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
