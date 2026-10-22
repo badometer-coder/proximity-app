@@ -69,7 +69,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surfaceLight,
-    paddingHorizontal: 10,
+    paddingHorizontal: 6,
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
