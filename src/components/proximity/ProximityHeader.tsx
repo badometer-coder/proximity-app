@@ -1,10 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { formatRelativeTime } from '../../lib/utils';
 import { useTheme } from '../../context/ThemeContext';
-
 export const ProximityHeader = ({ lastUpdated }: { lastUpdated: string | null }) => {
   const { mode, toggle, colors } = useTheme();
   const styles = getStyles(colors);
@@ -48,12 +47,12 @@ const getStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surfaceLight,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
-    gap: 6,
+    gap: 4,
   },
   toggleText: { fontSize: 12, fontWeight: '600', color: colors.text.primary },
 });
