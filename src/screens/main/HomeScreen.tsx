@@ -1,13 +1,24 @@
 
+import React, { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/auth/useAuth';
 import { useTheme } from '../../context/ThemeContext';
+import { supabase } from '../../config/supabase';
 export const HomeScreen: React.FC = () => {
   const { signOut, session } = useAuth();
   const { mode, toggle, colors } = useTheme();
   const styles = getStyles(colors);
+  const [displayName, setDisplayName] = useState<string>('');
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    supabase.from('profiles').select('full_name, username').eq('id', session.user.id).single()
+      .then(({ data }) => {
+        if (data) setDisplayName(data.full_name || data.username || session.user.email?.split('@')[0] || '');
+      });
+  }, [session]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -32,7 +43,7 @@ export const HomeScreen: React.FC = () => {
           <Text style={styles.icon}>📍</Text>
         </View>
 
-        <Text style={styles.title}>Welcome Back, {session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'there'}!</Text>
+        <Text style={styles.title}>Welcome Back{displayName ? `, ${displayName}` : ''}!</Text>
         <Text style={styles.subtitle}>You are successfully logged in and connected.</Text>
 
         <TouchableOpacity style={styles.button} onPress={handleSignOut} activeOpacity={0.8}>
