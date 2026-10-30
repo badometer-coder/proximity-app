@@ -43,7 +43,7 @@ export const HomeScreen: React.FC = () => {
           <Text style={styles.icon}>📍</Text>
         </View>
 
-        <Text style={styles.title}>Welcome Back{displayName ? `, ${displayName}` : ''}!</Text>
+        <Text style={styles.title}>Welcome!</Text>
         <Text style={styles.subtitle}>You are successfully logged in and connected.</Text>
 
         <TouchableOpacity style={styles.button} onPress={handleSignOut} activeOpacity={0.8}>
