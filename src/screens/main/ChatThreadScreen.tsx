@@ -1,4 +1,5 @@
 
+import React, { useState } from 'react';
 import { ChatMessage } from '../../types';
 import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { theme } from '../../constants/theme';
