@@ -6,22 +6,7 @@ import { Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../config/supabase';
 import { useAuth } from '../../hooks/auth/useAuth';
-import { useEffect, useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-const [fullName, setFullName] = useState<string>('');
-
-useEffect(() => {
-  const fetchProfile = async () => {
-    if (!session?.user?.id) return;
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('id', session.user.id)
-      .single();
-    if (data) setFullName(data.full_name);
-  };
-  fetchProfile();
-}, [session?.user?.id]);
 export const HomeScreen: React.FC = () => {
   const { signOut } = useAuth();
   const { mode, toggle, colors } = useTheme();
