@@ -34,6 +34,8 @@ jobs:
         run: eas update --channel preview --message "${{ github.event.head_commit.message }}" --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_PUBLIC_SUPABASE_URL: https://nnlwhgpjmjnzmxeslbks.supabase.co
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ubHdoZ3BqbWpuem14ZXNsYmtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4OTQ0MTAsImV4cCI6MjEwMDQ3MDQxMH0.G8VQSJSG8cSiYbiuUt8bs_LOBp_LoGaWPs4AE4d2j28
 
       - name: Notify agent on failure
         if: failure()
