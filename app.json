@@ -34,7 +34,9 @@
     },
     "runtimeVersion": "1.0.0",
     "updates": {
-      "url": "https://u.expo.dev/c0435db0-4f3b-45ca-b909-45a544efdc7d"
+      "url": "https://u.expo.dev/c0435db0-4f3b-45ca-b909-45a544efdc7d",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
     },
     "plugins": [
       "react-native-ble-plx"
