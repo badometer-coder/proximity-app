@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/auth/useAuth';
 import { useTheme } from '../../context/ThemeContext';
 export const HomeScreen: React.FC = () => {
-  const { signOut } = useAuth();
+  const { signOut, session } = useAuth();
   const { mode, toggle, colors } = useTheme();
   const styles = getStyles(colors);
 
@@ -32,7 +32,7 @@ export const HomeScreen: React.FC = () => {
           <Text style={styles.icon}>📍</Text>
         </View>
 
-        <Text style={styles.title}>Welcome Back</Text>
+        <Text style={styles.title}>Welcome Back, {session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'there'}!</Text>
         <Text style={styles.subtitle}>You are successfully logged in and connected.</Text>
 
         <TouchableOpacity style={styles.button} onPress={handleSignOut} activeOpacity={0.8}>
