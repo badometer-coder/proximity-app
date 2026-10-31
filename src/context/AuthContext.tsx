@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
-import { supabase } from '../config/supabase';
 
+import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
+import { supabase } from '../config/supabase';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -47,7 +47,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'exp://', // Or your deep link URL
+        // Open the native OAuth flow and return the session directly
+        // (no browser redirect needed on native Android/iOS)
+        skipBrowserRedirect: true,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     });
     return { data, error };
