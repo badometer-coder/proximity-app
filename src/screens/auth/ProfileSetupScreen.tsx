@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useAuth } from '../../hooks/auth/useAuth';
+
+import { Alert, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../config/supabase';
 import { theme } from '../../constants/theme';
-
+import { useAuth } from '../../hooks/auth/useAuth';
 interface ProfileSetupScreenProps {
   onComplete: () => void;
 }
@@ -12,9 +12,9 @@ interface ProfileSetupScreenProps {
 export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ onComplete }: ProfileSetupScreenProps) => {
   const { session } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState('');
-  const [age, setAge] = useState('');
+  const [fullName, setFullName] = useState('Jon Doe');
+  const [username, setUsername] = useState('jon_doe');
+  const [age, setAge] = useState('18');
   const [isLoading, setIsLoading] = useState(false);
 
   const pickImage = async () => {
