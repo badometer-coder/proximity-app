@@ -17,7 +17,7 @@ export const HomeScreen: React.FC = () => {
     if (!session?.user?.id) return;
     supabase.from('profiles').select('full_name, username').eq('id', session.user.id).single()
       .then(({ data }: { data: any }) => {
-        if (data) setFullName(data.full_name || data.username || '');
+        if (data) setFullName(data.username || '');
       });
   }, [session?.user?.id]);
 
