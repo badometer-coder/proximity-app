@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "proximity-app-final",
-    "slug": "proximity-app-final",
+    "name": "badometer",
+    "slug": "badometer",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
