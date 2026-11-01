@@ -112,6 +112,6 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: 'bold', color: theme.colors.text.primary, marginBottom: 8 },
   subtitle: { fontSize: 15, color: theme.colors.text.secondary, marginBottom: 32 },
   input: { backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 8, padding: 14, fontSize: 15, marginBottom: 16, color: theme.colors.text.primary },
-  button: { backgroundColor: theme.colors.primary.main, padding: 16, borderRadius: 8, alignItems: 'center' },
+  button: { backgroundColor: theme.colors.primary.main, padding: 16, borderRadius: 8, alignItems: 'center', alignSelf: 'center', width: '70%' },
   buttonText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
 });
