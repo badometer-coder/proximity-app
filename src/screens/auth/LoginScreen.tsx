@@ -105,6 +105,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
+    alignSelf: 'center',
+    width: '70%',
     marginBottom: 8,
     shadowColor: theme.colors.primary.main,
     shadowOffset: { width: 0, height: 2 },
