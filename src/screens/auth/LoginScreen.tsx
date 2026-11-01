@@ -122,9 +122,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5
   },
   buttonOutline: {
-    backgroundColor: 'transparent',
+    backgroundColor: '#22C55E',
     borderWidth: 1.5,
-    borderColor: theme.colors.primary.main,
+    borderColor: '#22C55E',
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 8,
