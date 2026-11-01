@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "badometer",
-    "slug": "badometer",
+    "slug": "proximity-app-final",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -41,6 +41,11 @@
     "plugins": [
       "react-native-ble-plx"
     ],
-    "owner": "dani-prox"
+    "owner": "dani-prox",
+    "extra": {
+      "eas": {
+        "projectId": "c0435db0-4f3b-45ca-b909-45a544efdc7d"
+      }
+    }
   }
 }
