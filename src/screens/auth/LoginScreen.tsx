@@ -37,7 +37,7 @@ export const LoginScreen: React.FC = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.inner}>
-        <Text style={styles.title}>Proximity</Text>
+        <Text style={styles.title}>Badometer</Text>
         <Text style={styles.subtitle}>Find people nearby</Text>
 
         <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
