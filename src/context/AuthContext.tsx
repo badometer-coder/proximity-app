@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
+import { Linking } from 'react-native';
 import { supabase } from '../config/supabase';
 interface AuthContextType {
   user: User | null;
