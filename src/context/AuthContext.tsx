@@ -59,7 +59,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
     if (error) return { data, error };
     if (data?.url) {
-//
+      await Linking.openURL(data.url);
+    }
+    return { data, error };
+  };
 
   const signUp = async (email: string, pass: string) => {
     const { data, error } = await supabase.auth.signUp({
