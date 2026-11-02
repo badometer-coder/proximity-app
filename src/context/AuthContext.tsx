@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       options: {
         // Open the OAuth URL in the system browser; the redirect
         // returns to the app via the deep link to complete sign-in.
-        skipBrowserRedirect: true,
+        skipBrowserRedirect: false,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
