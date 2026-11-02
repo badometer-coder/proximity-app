@@ -47,9 +47,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // Open the native OAuth flow and return the session directly
-        // (no browser redirect needed on native Android/iOS)
-        skipBrowserRedirect: true,
+        // Let the browser handle the OAuth redirect so the session
+        // is returned directly to the app on native Android/iOS
+        skipBrowserRedirect: false,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
